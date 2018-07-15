@@ -6,4 +6,8 @@
 cmake-build-debug/
 ext/restbed/dependency/catch/
 build
-
+.dockerignore
+.vscode/
+Dockerfile
+error.log
+openloki.code-workspace

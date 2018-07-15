@@ -6,7 +6,6 @@
 
 
 #include "tools.h"
-#include "mylmdb.h"
 #include "rpccalls.h"
 #include "MySqlAccounts.h"
 #include "TxSearch.h"
@@ -60,7 +59,7 @@ CurrentBlockchainStatus::start_monitor_blockchain_thread()
 uint64_t
 CurrentBlockchainStatus::get_current_blockchain_height()
 {
-    return mcore.get_current_blockchain_height() - 1;
+    return mcore->get_current_blockchain_height() - 1;
 }
 
 
@@ -116,11 +115,7 @@ CurrentBlockchainStatus::is_tx_spendtime_unlocked(
         // XXX: this needs to be fast, so we'd need to get the starting heights
         // from the daemon to be correct once voting kicks in
 
-        uint64_t v2height = bc_setup.net_type == TESTNET ? 624634 : bc_setup.net_type == STAGENET ? (uint64_t)-1/*TODO*/ : 1009827;
-
-        uint64_t leeway = block_height < v2height
-                          ? CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V1
-                          : CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2;
+        uint64_t leeway = CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2;
 
         if(current_time + leeway >= unlock_time)
             return true;

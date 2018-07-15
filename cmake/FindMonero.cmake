@@ -41,6 +41,8 @@ foreach (l ${LIBS})
 
 	string(TOUPPER ${l} L)
 
+	message(STATUS DEBUG " ${l} ${CMAKE_LIBRARY_PATH}")
+
 	find_library(Xmr_${L}_LIBRARY
 			NAMES ${l}
 			PATHS ${CMAKE_LIBRARY_PATH}
