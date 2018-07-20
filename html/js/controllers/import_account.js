@@ -35,18 +35,15 @@ thinwalletCtrls.controller("ImportAccountCtrl", function($scope, $location,
     $scope.success = '';
     $scope.no_blocks_to_import = "1000";
 
-
-    // if we are import all tx from blockchain,
-    // go to different modal and its controller
+    // if we import all tx from blockchain,
     $scope.importAll = function()
     {
-        ModalService.show('import-wallet');
-        return;
-    }
+        ApiCalls.import_wallet_request(AccountService.getAddress(), AccountService.getViewKey())
+            .then(handleResponse)
+            .catch(handleError);
+    };
 
-
-    // if we import recent blocks, we can make this request here
-    // as its much less complicated that importAll.
+    // if we import recent blocks
     $scope.importLast = function()
     {
         if ($scope.no_blocks_to_import > 132000) {
@@ -57,23 +54,27 @@ thinwalletCtrls.controller("ImportAccountCtrl", function($scope, $location,
         ApiCalls.import_recent_wallet_request(AccountService.getAddress(),
                                               AccountService.getViewKey(),
                                               $scope.no_blocks_to_import)
-            .then(function(response) {
+            .then(handleResponse)
+            .catch(handleError);
+    };
 
-                var data = response.data;
+    function handleResponse(response) {
+        var data = response.data;
 
-                $scope.status = data.status;
+        if ('status' in data === true && data.status == "error") {
+            $scope.error = data.error || "Some error occurred";
+            return;
+        }
 
-                if (data.request_fulfilled === true) {
-                    $scope.success = "Request successful. Import will start shortly. This window will close in few seconds.";
-                    $timeout(function(){ModalService.hide('imported-account')}, 5000);
-                }
-                else
-                {
-                    $scope.error = data.Error || "An unexpected server error occurred";
-                }
-            },function(err) {
-                $scope.error = "An unexpected server error occurred";
-            });
+        if (data.request_fulfilled === true) {
+            $scope.success = "Request successful. Import will start shortly. This window will close in few seconds.";
+            $timeout(function(){ModalService.hide('imported-account')}, 5000);
+        } else {
+            $scope.error = data.error || "An unexpected server error occurred";
+        }
     }
 
+    function handleError() {
+        $scope.error = "An unexpected server error occurred";
+    }
 });

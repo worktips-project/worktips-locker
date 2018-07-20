@@ -61,7 +61,7 @@ thinwalletCtrls.controller('AccountCtrl', function($scope, $rootScope, $http, $q
        // return ($scope.blockchain_height - tx.height) > config.txMinConfirms;
         if (!tx.coinbase)
         {
-            // for regular txs, by defalut 10 blocks is required for it to
+            // for regular txs, by default 10 blocks is required for it to
             // be confirmed/spendable
             return ($scope.blockchain_height - tx.height) > config.txMinConfirms;
         }
@@ -152,7 +152,7 @@ thinwalletCtrls.controller('AccountCtrl', function($scope, $rootScope, $http, $q
                         var scanned_block_timestamp = data.scanned_block_timestamp || 0;
 
                         if (scanned_block_timestamp > 0)
-                            scanned_block_timestamp = new Date(scanned_block_timestamp * 1000)
+                            scanned_block_timestamp = new Date(scanned_block_timestamp * 1000);
 
 
                         $scope.locked_balance = new JSBigInt(data.locked_funds || 0);
@@ -184,7 +184,7 @@ thinwalletCtrls.controller('AccountCtrl', function($scope, $rootScope, $http, $q
                     var scanned_block_timestamp = data.scanned_block_timestamp || 0;
 
                     if (scanned_block_timestamp > 0)
-                        scanned_block_timestamp = new Date(scanned_block_timestamp * 1000)
+                        scanned_block_timestamp = new Date(scanned_block_timestamp * 1000);
 
                     $scope.account_scanned_height = data.scanned_height || 0;
                     $scope.account_scanned_block_height = data.scanned_block_height || 0;
@@ -209,7 +209,8 @@ thinwalletCtrls.controller('AccountCtrl', function($scope, $rootScope, $http, $q
                                     );
                                     if (transactions[i].spent_outputs[j].key_image !== key_image)
                                     {
-                                        transactions[i].total_sent = new JSBigInt(transactions[i].total_sent).subtract(transactions[i].spent_outputs[j].amount).toString();
+                                        transactions[i].total_sent = new JSBigInt(transactions[i].total_sent)
+                                            .subtract(transactions[i].spent_outputs[j].amount).toString();
                                         transactions[i].spent_outputs.splice(j, 1);
                                         j--;
                                     }
@@ -249,8 +250,8 @@ thinwalletCtrls.controller('AccountCtrl', function($scope, $rootScope, $http, $q
                         }
                         else
                         {
-                            //remove tx if zero xmr recievied. probably spent only tx,
-                            //but we dont have spendkey to verify this.
+                            //remove tx if zero loki received. probably spent only tx,
+                            //but we don't have spendkey to verify this.
                             //console.log(new JSBigInt(transactions[i].total_received));
                             //console.log(new JSBigInt(transactions[i].total_received).compare(0));
                             if (new JSBigInt(transactions[i].total_received).compare(0) <= 0)
