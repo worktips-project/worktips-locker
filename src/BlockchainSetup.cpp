@@ -172,7 +172,7 @@ BlockchainSetup::_init()
 
     get_blockchain_path();
 
-    parse_addr_and_viewkey();
+    //parse_addr_and_viewkey();
 }
 
 }
