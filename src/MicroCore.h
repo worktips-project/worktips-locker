@@ -18,9 +18,9 @@ using namespace crypto;
 using namespace std;
 
 /**
- * Micro version of cryptonode::core class
+ * Micro version of cryptonote::core class
  * Micro version of constructor,
- * init and destructor are implemted.
+ * init and destructor are implemented.
  *
  * Just enough to read the blockchain
  * database for use in the example.
@@ -36,7 +36,7 @@ class MicroCore {
 
     network_type nettype;
 
-    bool initialization_succeded {false};
+    bool initialization_succeeded {false};
 
 public:
     MicroCore();

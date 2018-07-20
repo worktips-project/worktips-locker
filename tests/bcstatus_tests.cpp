@@ -220,12 +220,12 @@ TEST_P(BCSTATUS_TEST, DefaultConstruction)
 
 
 
-TEST_P(BCSTATUS_TEST, InitMoneroBlockchain)
+TEST_P(BCSTATUS_TEST, InitLokiBlockchain)
 {
     EXPECT_CALL(*mcore_ptr, init(_, _))
             .WillOnce(Return(true));
 
-    EXPECT_TRUE(bcs->init_monero_blockchain());
+    EXPECT_TRUE(bcs->init_loki_blockchain());
 }
 
 TEST_P(BCSTATUS_TEST, GetBlock)

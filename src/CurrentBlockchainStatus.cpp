@@ -8,7 +8,7 @@
 
 
 #undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "openmonero"
+#define MONERO_DEFAULT_LOG_CATEGORY "openloki"
 
 namespace xmreg
 {
@@ -69,7 +69,7 @@ CurrentBlockchainStatus::update_current_blockchain_height()
 }
 
 bool
-CurrentBlockchainStatus::init_monero_blockchain()
+CurrentBlockchainStatus::init_loki_blockchain()
 {
     // initialize the core using the blockchain path
     return mcore->init(bc_setup.blockchain_path, bc_setup.net_type);}
@@ -583,8 +583,8 @@ CurrentBlockchainStatus::search_if_payment_made(
                 // initialize with regular amount
                 uint64_t rct_amount = amount;
 
-                // cointbase txs have amounts in plain sight.
-                // so use amount from ringct, only for non-coinbase txs
+                // coinbase txs have amounts in plain sight.
+                // so use amount from RingCT, only for non-coinbase txs
                 if (!is_coinbase(tx))
                 {
                     bool r;
@@ -669,8 +669,8 @@ CurrentBlockchainStatus::start_tx_search_thread(
 
     if (search_thread_exist(acc.address))
     {
-        // thread for this address exist, dont make new one
-        //cout << "Thread exists, dont make new one\n";
+        // thread for this address exist, don't make new one
+        //cout << "Thread exists, don't make new one\n";
         return true; // this is still OK, so return true.
     }
 
