@@ -85,7 +85,7 @@ MicroCore::init(const string& _blockchain_path, network_type nt)
         return false;
     }
 
-    initialization_succeded = true;
+    initialization_succeeded = true;
 
     return true;
 }
@@ -147,14 +147,14 @@ MicroCore::get_device() const
 bool
 MicroCore::init_success() const
 {
-    return initialization_succeded;
+    return initialization_succeeded;
 }
 
 MicroCore::~MicroCore()
 {
     //cout << "\n\nMicroCore::~MicroCore()\n\n";
 
-    if (initialization_succeded)
+    if (initialization_succeeded)
     {
         //core_storage.get_db().safesyncmode(true);
         if (core_storage.get_db().is_open())

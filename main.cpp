@@ -51,7 +51,7 @@ cryptonote::network_type nettype = testnet ?
   cryptonote::network_type::TESTNET : stagenet ?
   cryptonote::network_type::STAGENET : cryptonote::network_type::MAINNET;
 
-// create blockchainsetup instance and set its parameters
+// create blockchain setup instance and set its parameters
 // suc as blockchain status monitoring thread parameters
 
 xmreg::BlockchainSetup bc_setup {nettype, do_not_relay, *config_file_opt};
@@ -76,7 +76,7 @@ xmreg::MySqlConnector::dbname   = config_json["database"]["dbname"];
 // once we have all the parameters for the blockchain and our backend
 // we can create and instance of  CurrentBlockchainStatus class.
 // we are going to this through a shared pointer. This way we will
-// have only once instance of this class, which we can easly inject
+// have only once instance of this class, which we can easily inject
 // and pass around other class which need to access blockchain data
 
 auto current_bc_status
@@ -87,12 +87,12 @@ auto current_bc_status
 // since CurrentBlockchainStatus class monitors current status
 // of the blockchain (e.g., current height), its seems logical to
 // make static objects for accessing the blockchain in this class.
-// this way monero accessing blockchain variables (i.e. mcore and core_storage)
-// are not passed around like crazy everywhere. Uri( "file:///tmp/dh2048.pem"
+// this way blockchain variables (i.e. mcore and core_storage)
+// are not passed around like crazy everywhere.
 // There are here, and this is the only class that
 // has direct access to blockchain and talks (using rpc calls)
-// with the deamon.
-if (!current_bc_status->init_monero_blockchain())
+// with the daemon.
+if (!current_bc_status->init_loki_blockchain())
 {
     cerr << "Error accessing blockchain." << endl;
     return EXIT_FAILURE;
@@ -122,11 +122,11 @@ catch(std::exception const& e)
 // at this point we should be connected to the mysql
 
 // mysql connection will timeout after few hours
-// of iddle time. so we have this tiny helper
+// of idle time. so we have this tiny helper
 // thread to ping mysql, thus keeping it alive.
 //
 // "A completely different way to tackle this,
-// if your program doesn’t block forever waiting on I/O while idle,
+// if your program doesn't block forever waiting on I/O while idle,
 // is to periodically call Connection::ping(). [12]
 // This sends the smallest possible amount of data to the database server,
 // which will reset its idle timer and cause it to respond, so ping() returns true.
@@ -161,7 +161,7 @@ MAKE_RESOURCE(get_version);
 // restbed service
 Service service;
 
-// Publish the Open Monero API created so that front end can use it
+// Publish the Open Loki API created so that front end can use it
 service.publish(login);
 service.publish(get_address_txs);
 service.publish(get_address_info);

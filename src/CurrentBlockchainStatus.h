@@ -67,7 +67,7 @@ public:
     update_current_blockchain_height();
 
     virtual bool
-    init_monero_blockchain();
+    init_loki_blockchain();
 
     // inject TxUnlockChecker object
     // its simplifies mocking its behavior in our
@@ -164,7 +164,7 @@ public:
                    uint64_t global_amount_index);
 
     // definitions of these function are at the end of this file
-    // due to forward declaraions of TxSearch
+    // due to forward declarations of TxSearch
     virtual bool
     start_tx_search_thread(XmrAccount acc);
 
@@ -218,7 +218,7 @@ public:
 
     /*
      * The frontend requires rct field to work
-     * the filed consisitct of rct_pk, mask, and amount.
+     * the field consists of rct_pk, mask, and amount.
      */
     virtual tuple<string, string, string>
     construct_output_rct_field(
@@ -241,7 +241,7 @@ public:
     // default destructor is fine
     virtual ~CurrentBlockchainStatus() = default;
 
-    // we dont want any copies of the objects of this class
+    // we don't want any copies of the objects of this class
     CurrentBlockchainStatus(CurrentBlockchainStatus const&) = delete;
     CurrentBlockchainStatus& operator= (CurrentBlockchainStatus const&) = delete;
 
@@ -251,20 +251,20 @@ public:
 
 protected:
 
-    // parameters used to connect/read monero blockchain
+    // parameters used to connect/read loki blockchain
     BlockchainSetup bc_setup;
 
     // since this class monitors current status
     // of the blockchain, its seems logical to
     // make object for accessing the blockchain here
-    // use pointer for this, so that we can easly
+    // use pointer for this, so that we can easily
     // inject mock MicroCore class in our tests
-    // as MicroCore is not copabaly nor movable
+    // as MicroCore is not copyable nor movable
     std::unique_ptr<MicroCore> mcore;
 
     // vector of mempool transactions that all threads
     // can refer to
-    //           <recieved_time, transaction>
+    //           <received_time, transaction>
     mempool_txs_t mempool_txs;
 
     // map that will keep track of search threads. In the
@@ -272,7 +272,7 @@ protected:
     // make it static to guarantee only one such map exist.
     map<string, unique_ptr<TxSearch>> searching_threads;
 
-    // thread that will be dispachaed and will keep monitoring blockchain
+    // thread that will be dispatched and will keep monitoring blockchain
     // and mempool changes
     std::thread m_thread;
 };

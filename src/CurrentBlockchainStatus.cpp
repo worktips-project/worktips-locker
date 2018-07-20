@@ -12,7 +12,7 @@
 
 
 #undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "openmonero"
+#define MONERO_DEFAULT_LOG_CATEGORY "openloki"
 
 namespace xmreg
 {
@@ -72,9 +72,9 @@ CurrentBlockchainStatus::update_current_blockchain_height()
 }
 
 bool
-CurrentBlockchainStatus::init_monero_blockchain()
+CurrentBlockchainStatus::init_loki_blockchain()
 {
-    // set  monero log output level
+    // set loki log output level
     uint32_t log_level = 0;
     mlog_configure(mlog_get_default_log_path(""), true);
 
@@ -625,8 +625,8 @@ CurrentBlockchainStatus::search_if_payment_made(
                 // initialize with regular amount
                 uint64_t rct_amount = amount;
 
-                // cointbase txs have amounts in plain sight.
-                // so use amount from ringct, only for non-coinbase txs
+                // coinbase txs have amounts in plain sight.
+                // so use amount from RingCT, only for non-coinbase txs
                 if (!is_coinbase(tx))
                 {
                     bool r;
@@ -712,8 +712,8 @@ CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
 
     if (search_thread_exist(acc.address))
     {
-        // thread for this address exist, dont make new one
-        //cout << "Thread exists, dont make new one\n";
+        // thread for this address exist, don't make new one
+        //cout << "Thread exists, don't make new one\n";
         return true; // this is still OK, so return true.
     }
 
@@ -728,7 +728,7 @@ CurrentBlockchainStatus::start_tx_search_thread(XmrAccount acc)
     }
     catch (const std::exception& e)
     {
-        cerr << "Faild created a search thread: " << e.what() << endl;
+        cerr << "Failed creating a search thread: " << e.what() << endl;
         return false;
     }
 
