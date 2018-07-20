@@ -36,12 +36,12 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
     $scope.submitting = false;
     $scope.targets = [{}];
     $scope.totalAmount = JSBigInt.ZERO;
-    $scope.mixins = config.defaultMixin.toString();
     $scope.view_only = AccountService.isViewOnly();
 
     $scope.success_page = false;
     $scope.sent_tx = {};
 
+    var mixins = config.defaultMixin;
 
     var view_only = AccountService.isViewOnly();
 
@@ -54,8 +54,8 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
     else
         explorerUrl = config.stagenetExplorerUrl;
 
-    // few multiplayers based on uint64_t wallet2::get_fee_multiplier
-    var fee_multiplayers = [1, 4, 20, 166];
+    // few multipliers based on uint64_t wallet2::get_fee_multiplier
+    var fee_multipliers = [1, 4, 20, 166];
 
     var default_priority = 2;
 
@@ -99,7 +99,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
     $scope.transferConfirmDialog = undefined;
 
     function confirmTransfer(address, amount, tx_hash, fee, tx_prv_key,
-                             payment_id, mixin, priority, txBlobKBytes, raw_tx,
+                             payment_id, priority, txBlobKBytes, raw_tx,
                              no_inputs, no_outputs) {
 
         var deferred = $q.defer();
@@ -118,7 +118,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
             amount: amount,
             tx_prv_key: tx_prv_key,
             payment_id: payment_id,
-            mixin: mixin + 1,
+            mixin: mixins + 1,
             raw_tx: raw_tx,
             no_inputs: no_inputs,
             no_outputs: no_outputs,
@@ -163,12 +163,11 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
         $scope.sent_tx = {};
     };
 
-    $scope.sendCoins = function(targets, mixin, payment_id) {
+    $scope.sendCoins = function(targets, payment_id) {
         if ($scope.submitting) return;
         $scope.status = "";
         $scope.error = "";
         $scope.submitting = true;
-        mixin = parseInt(mixin);
         var rct = true; //maybe want to set this later based on inputs (?)
         var realDsts = [];
         var targetPromises = [];
@@ -288,7 +287,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
             return;
         }
 
-        var fee_multiplayer = fee_multiplayers[priority - 1]; // default is 4
+        var fee_multiplier = fee_multipliers[priority - 1]; // default is 4
 
         var neededFee = rct ? feePerKB.multiply(13) : feePerKB;
         var totalAmountWithoutFee;
@@ -352,9 +351,9 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
                 address: AccountService.getAddress(),
                 view_key: AccountService.getViewKey(),
                 amount: '0',
-                mixin: mixin,
+                mixin: mixins,
                 // Use dust outputs only when we are using no mixins
-                use_dust: mixin === 0,
+                use_dust: mixins === 0,
                 dust_threshold: config.dustThreshold.toString()
             };
 
@@ -368,7 +367,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
                     if (data.per_kb_fee)
                     {
                         feePerKB = new JSBigInt(data.per_kb_fee);
-                        neededFee = feePerKB.multiply(13).multiply(fee_multiplayer);
+                        neededFee = feePerKB.multiply(13).multiply(fee_multiplier);
                     }
                     transfer().then(transferSuccess, transferFailure);
                 }, function(data) {
@@ -423,7 +422,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
                 numKB++;
             }
             console.log(txBlobBytes + " bytes <= " + numKB + " KB (current fee: " + cnUtil.formatMoneyFull(prevFee) + ")");
-            neededFee = feePerKB.multiply(numKB).multiply(fee_multiplayer);
+            neededFee = feePerKB.multiply(numKB).multiply(fee_multiplier);
             // if we need a higher fee
             if (neededFee.compare(prevFee) > 0) {
                 console.log("Previous fee: " + cnUtil.formatMoneyFull(prevFee) + " New fee: " + cnUtil.formatMoneyFull(neededFee));
@@ -444,7 +443,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
 
             confirmTransfer(realDsts[0].address, realDsts[0].amount,
                             tx_hash, neededFee, tx_prvkey, payment_id,
-                            mixin, priority, txBlobKBytes, raw_tx,
+                            priority, txBlobKBytes, raw_tx,
                             no_inputs, no_outputs).then(function() {
 
                 //alert('Confirmed ');
@@ -544,7 +543,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
                 //compute fee as closely as possible before hand
                 if (using_outs.length > 1 && rct)
                 {
-                    var newNeededFee = JSBigInt(Math.ceil(cnUtil.estimateRctSize(using_outs.length, mixin, 2) / 1024)).multiply(feePerKB).multiply(fee_multiplayer);
+                    var newNeededFee = JSBigInt(Math.ceil(cnUtil.estimateRctSize(using_outs.length, mixins, 2) / 1024)).multiply(feePerKB).multiply(fee_multiplier);
                     totalAmount = totalAmountWithoutFee.add(newNeededFee);
                     //add outputs 1 at a time till we either have them all or can meet the fee
                     while (using_outs_amount.compare(totalAmount) < 0 && unused_outs.length > 0)
@@ -553,7 +552,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
                         using_outs.push(out);
                         using_outs_amount = using_outs_amount.add(out.amount);
                         console.log("Using output: " + cnUtil.formatMoney(out.amount) + " - " + JSON.stringify(out));
-                        newNeededFee = JSBigInt(Math.ceil(cnUtil.estimateRctSize(using_outs.length, mixin, 2) / 1024)).multiply(feePerKB).multiply(fee_multiplayer);
+                        newNeededFee = JSBigInt(Math.ceil(cnUtil.estimateRctSize(using_outs.length, mixins, 2) / 1024)).multiply(feePerKB).multiply(fee_multiplier);
                         totalAmount = totalAmountWithoutFee.add(newNeededFee);
                     }
                     console.log("New fee: " + cnUtil.formatMoneySymbol(newNeededFee) + " for " + using_outs.length + " inputs");
@@ -605,48 +604,40 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
                 {
                     //create random destination to keep 2 outputs always in case of 0 change
                     var fakeAddress = cnUtil.create_address(cnUtil.random_scalar()).public_addr;
-                    console.log("Sending 0 XMR to a fake address to keep tx uniform (no change exists): " + fakeAddress);
+                    console.log("Sending 0 LOKI to a fake address to keep tx uniform (no change exists): " + fakeAddress);
                     dsts.push({
                         address: fakeAddress,
                         amount: 0
                     });
                 }
 
-                if (mixin > 0)
+                var amounts = [];
+                for (var l = 0; l < using_outs.length; l++)
                 {
-                    var amounts = [];
-                    for (var l = 0; l < using_outs.length; l++)
-                    {
-                        amounts.push(using_outs[l].rct ? "0" : using_outs[l].amount.toString());
-                        //amounts.push("0");
-                    }
-                    var request = {
-                        amounts: amounts,
-                        count: mixin + 1 // Add one to mixin so we can skip real output key if necessary
-                    };
-
-                    ApiCalls.get_random_outs(request.amounts, request.count)
-                        .then(function(response) {
-                            var data = response.data;
-
-                            if (data.status === "error")
-                            {
-                                $scope.status = "";
-                                $scope.submitting = false;
-                                $scope.error = "Failed to create transaction: " + data.error;
-                                return;
-                            }
-
-                            createTx(data.amount_outs);
-                        }, function(data) {
-                            deferred.reject('Failed to get unspent outs');
-                        });
-                } else if (mixin < 0 || isNaN(mixin)) {
-                    deferred.reject("Invalid mixin");
-                    return;
-                } else { // mixin === 0
-                    createTx();
+                    amounts.push(using_outs[l].rct ? "0" : using_outs[l].amount.toString());
+                    //amounts.push("0");
                 }
+                var request = {
+                    amounts: amounts,
+                    count: mixins + 1 // Add one to mixin so we can skip real output key if necessary
+                };
+
+                ApiCalls.get_random_outs(request.amounts, request.count)
+                    .then(function(response) {
+                        var data = response.data;
+
+                        if (data.status === "error")
+                        {
+                            $scope.status = "";
+                            $scope.submitting = false;
+                            $scope.error = "Failed to create transaction: " + data.error;
+                            return;
+                        }
+
+                        createTx(data.amount_outs);
+                    }, function(data) {
+                        deferred.reject('Failed to get unspent outs');
+                    });
 
                 // Create & serialize transaction
                 function createTx(mix_outs)
@@ -671,7 +662,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q,
                             AccountService.getPublicKeys(),
                             AccountService.getSecretKeys(),
                             splittedDsts, using_outs,
-                            mix_outs, mixin, neededFee,
+                            mix_outs, mixins, neededFee,
                             payment_id, pid_encrypt,
                             realDestViewKey, 0, rct);
 
