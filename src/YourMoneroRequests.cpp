@@ -898,10 +898,10 @@ YourMoneroRequests::import_wallet_request(const shared_ptr< Session > session, c
     j_response["request_fulfilled"] = false;
     j_response["import_fee"]        = current_bc_status->get_bc_setup().import_fee;
     j_response["status"] = "error";
-    j_response["error"]  = "Some error occured";
+    j_response["error"]  = "Some error occurred";
 
     // if current_bc_status-> is zero, we just import the wallet.
-    // we dont care about any databases or anything, as importin all wallet is free.
+    // we don't care about any databases or anything, as importing whole wallet is free.
     // just reset the scanned block height in mysql and finish.
     if (current_bc_status->get_bc_setup().import_fee == 0)
     {
@@ -1574,7 +1574,7 @@ YourMoneroRequests::get_version(const shared_ptr< Session > session, const Bytes
         {"last_git_commit_hash", string {GIT_COMMIT_HASH}},
         {"last_git_commit_date", string {GIT_COMMIT_DATETIME}},
         {"git_branch_name"     , string {GIT_BRANCH_NAME}},
-        {"monero_version_full" , string {MONERO_VERSION_FULL}},
+        {"monero_version_full" , string {LOKI_VERSION_FULL}},
         {"api"                 , OPENMONERO_RPC_VERSION},
         {"testnet"             , current_bc_status->get_bc_setup().net_type  == network_type::TESTNET},
         {"network_type"        , current_bc_status->get_bc_setup().net_type},
@@ -1672,18 +1672,18 @@ YourMoneroRequests::login_and_start_search_thread(
     // select this account if its existing one
     if (xmr_accounts->select(xmr_address, acc))
     {
-        // we got accunt from the database. we double check
+        // we got account from the database. we double check
         // if hash of provided viewkey by the frontend, matches
         // what we have in database.
 
-        // make hash of the submited viewkey. we only store
-        // hash of viewkey in database, not acctual viewkey.
+        // make hash of the submitted viewkey. we only store
+        // hash of viewkey in database, not actual viewkey.
         string viewkey_hash = make_hash(view_key);
 
         if (viewkey_hash == acc.viewkey_hash)
         {
             // if match, than save the viewkey in account object
-            // and proceed to checking if a search thread exisits
+            // and proceed to checking if a search thread exists
             // for this account. if not, then create new thread
 
             acc.viewkey = view_key;
@@ -1696,7 +1696,7 @@ YourMoneroRequests::login_and_start_search_thread(
             // to that account and updated mysql database whenever it
             // will find something.
             //
-            // The other client (i.e., a webbrowser) will query other functions to retrieve
+            // The other client (i.e., a web browser) will query other functions to retrieve
             // any belonging transactions in a loop. Thus the thread does not need
             // to do anything except looking for tx and updating mysql
             // with relative tx information
@@ -1775,7 +1775,7 @@ YourMoneroRequests::parse_request(
         cerr << "YourMoneroRequests::parse_request: " << e.what() << endl;
 
         j_response["status"] = "error";
-        j_response["reason"] = "reqest json parsing failed";
+        j_response["reason"] = "request json parsing failed";
 
         return false;
     }
