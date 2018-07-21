@@ -193,7 +193,7 @@ MAKE_RESOURCE(get_version);
 // restbed service
 Service service;
 
-// Publish the Open Loki API created so that front end can use it
+// Publish the Loki Locker API created so that front end can use it
 service.publish(login);
 service.publish(get_address_txs);
 service.publish(get_address_info);

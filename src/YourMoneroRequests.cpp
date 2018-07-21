@@ -1275,8 +1275,7 @@ YourMoneroRequests::import_recent_wallet_request(
     if (request_fulfilled)
     {
         j_response["request_fulfilled"] = request_fulfilled;
-        j_response["status"]  = "Updating account with for"
-                                " importing recent txs successeful.";
+        j_response["status"]            = "Updating account with for importing recent txs successful.";
     }
 
     string response_body = j_response.dump();
@@ -1662,7 +1661,7 @@ YourMoneroRequests::get_version(
         {"last_git_commit_hash", string {GIT_COMMIT_HASH}},
         {"last_git_commit_date", string {GIT_COMMIT_DATETIME}},
         {"git_branch_name"     , string {GIT_BRANCH_NAME}},
-        {"monero_version_full" , string {LOKI_VERSION_FULL}},
+        {"loki_version_full"   , string {LOKI_VERSION_FULL}},
         {"api"                 , OPENMONERO_RPC_VERSION},
         {"testnet"             , current_bc_status->get_bc_setup().net_type
                     == network_type::TESTNET},

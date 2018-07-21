@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 
 set(PROJECT_NAME
-        openloki)
+        loki-locker)
 
 project(${PROJECT_NAME})
 
@@ -11,15 +11,15 @@ if(CMAKE_SIZEOF_VOID_P EQUAL "4")
   add_definitions(-DMDB_VL32)
 endif()
 
-if (NOT MONERO_DIR)
-    set(MONERO_DIR ~/monero)
+if (NOT LOKI_DIR)
+    set(LOKI_DIR ~/loki)
 endif()
 
 option(BUILD_TEST "Build tests for the project" ON)
 
-message(STATUS MONERO_DIR ": ${MONERO_DIR}")
+message(STATUS LOKI_DIR ": ${LOKI_DIR}")
 
-set(MONERO_SOURCE_DIR ${MONERO_DIR}
+set(MONERO_SOURCE_DIR ${LOKI_DIR}
         CACHE PATH "Path to the root directory for Monero")
 
 # set location of monero build tree
@@ -164,13 +164,13 @@ endif()
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 
-#set(COVERAGE_EXCLUDES 'ext/*' '${MONERO_DIR}/*')
+#set(COVERAGE_EXCLUDES 'ext/*' '${LOKI_DIR}/*')
 
 include_directories(
         ${CMAKE_SOURCE_DIR}/ext/googletest/googletest/include
         ${CMAKE_SOURCE_DIR}/ext/googletest/googlemock/include)
 
-#include_directories(${MONERO_DIR}/tests/core_tests)
+#include_directories(${LOKI_DIR}/tests/core_tests)
 
 configure_files(${CMAKE_CURRENT_SOURCE_DIR}/sql ${CMAKE_CURRENT_BINARY_DIR}/sql)
 
