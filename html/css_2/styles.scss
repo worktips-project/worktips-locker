@@ -1,0 +1,70 @@
+$break-small: 479px;
+$break-normal: 767px;
+$break-large: 991px;
+
+// Colors
+$heroGreen: #008522;
+$lightGreen: #78be20;
+$darkTurquoise: #005f61;
+$darkNavy: #00263a;
+$red: #e65a5a;
+$yellow: #ffce66;
+
+// Acc Nav
+$accNavBg: green;
+$accNavText: white;
+$accNavActiveBg: white;
+$accNavActiveText: green;
+
+// Global
+$mainBg: black;
+$mainBorder: black;
+$inputBorder: $heroGreen;
+$greenBorder: $heroGreen;
+$textLight: white;
+$textLightGrey: #bbbbbb;
+$textDark: $darkNavy;
+$textGrey: #545d69;
+$textGreen: $heroGreen;
+$textGreenLight: $lightGreen;
+$textHint: #697278;
+
+// Links
+$linkColor: $heroGreen;
+$linkHover: $lightGreen;
+$linkLight: $lightGreen;
+
+$subHeadBg: $heroGreen;
+$subHeadText: $textLight;
+$alertBg: $lightGreen;
+
+// Buttons
+$buttonBg: $heroGreen;
+$buttonText: white;
+$buttonHoverBg: $lightGreen;
+$buttonHoverText: black;
+
+// Nav menu
+$navBgColor: black;
+$navText: white;
+$navHoverText: $heroGreen;
+$navActiveBg: white;
+$navActiveText: black;
+
+// Login button
+$loginBg: $heroGreen;
+$loginText: white;
+$loginHoverBg: white;
+$loginHoverText: $heroGreen;
+
+// Login tabs
+$tabBgColor: white;
+$tabBgHover: $lightGreen;
+$tabActiveBg: $heroGreen;
+$tabActiveText: white;
+
+@import 'normalize';
+@import 'webflow';
+@import 'nav';
+@import 'moncrypt.webflow';
+

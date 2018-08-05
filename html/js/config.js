@@ -1,12 +1,13 @@
 var config = {
-    apiUrl: "http://127.0.0.1:1984/",
+    //apiUrl: "http://127.0.0.1:1984/",
+    apiUrl: "http://loki.evo.codes:1984/",
     mainnetExplorerUrl: "https://lokiblocks.com/",
     testnetExplorerUrl: "",
     stagenetExplorerUrl: "",
     nettype: 0, /* 0 - MAINNET, 1 - TESTNET, 2 - STAGENET */
     coinUnitPlaces: 9,
-    txMinConfirms: 10,         // corresponds to CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE in Monero
-    txCoinbaseMinConfirms: 30, // corresponds to CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW in Monero
+    txMinConfirms: 10,         // corresponds to CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE in Loki
+    txCoinbaseMinConfirms: 30, // corresponds to CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW in Loki
     coinSymbol: 'LOKI',
     openAliasPrefix: "loki",
     coinName: 'Loki',

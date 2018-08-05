@@ -49,7 +49,8 @@ var thinwalletApp = angular.module('thinWallet', [
     'thinWallet.Services',
     'thinWallet.Filters',
     'thinWallet.Directives',
-    'ngIdle'
+    'ngIdle',
+    'ngClipboard',
 ]);
 
 thinwalletApp.config(['$httpProvider', function($httpProvider) {
@@ -70,6 +71,12 @@ thinwalletApp.run(function ($rootScope, $route, $location, $http, $timeout, $idl
     $idle.watch();
 
     $rootScope.$on('$routeChangeSuccess', function () {
+
+        $rootScope.$on('$stateChangeSuccess', function() {
+            //document.body.scrollTop = document.documentElement.scrollTop = 0;
+          window.scrollTo(0, 0);
+        });
+
         $rootScope.title = $route.current.title;
         AccountService.checkPageAuth();
     });

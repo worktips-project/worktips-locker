@@ -1,5 +1,7 @@
 .DS_Store
 .sass-cache
+html/css_2/styles.css
+html/css_2/styles.css.map
 *.*~
 *.user
 *.user.*
@@ -12,4 +14,6 @@ build
 .cproject
 .project
 .settings/
-
+.vscode/
+error.log
+*.code-workspace
