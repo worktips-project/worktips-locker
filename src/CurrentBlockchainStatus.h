@@ -52,7 +52,7 @@ public:
 
     atomic<uint64_t> current_height;
 
-    atomic<bool> is_running;
+    atomic<bool> is_running {false};
     atomic<bool> stop_blockchain_monitor_loop;
 
     CurrentBlockchainStatus(BlockchainSetup _bc_setup,
