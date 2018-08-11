@@ -31,18 +31,10 @@ to MyMonero. They include:
  - new transaction details window.
  - sending LOKI to a subaddress (not receiving nor generating subaddresses for now).
 
-## Live stagenet version
-
-- [http://172.104.45.209:81](http://172.104.45.209:81)
-
-This is Loki Locker running on stagenet network. You can use it to play around with it.
-Please note that the live version is running on cheap VPS, which may result in
-performance issues.
-
 
 ## Screenshot
 
-![Loki Locker](https://raw.githubusercontent.com/loki-project/loki-locker/master/screenshot/screen1.png)
+![Loki Locker](screenshot/screen1.png)
 
 
 ## Host it yourself
