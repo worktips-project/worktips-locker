@@ -16,21 +16,30 @@ namespace xmreg
         positional_options_description p;
 
         options_description desc(
-                "openmonero, Open Monero backend service");
+                "loki-locker, Loki Locker backend service");
 
         desc.add_options()
-                ("help,h", value<bool>()->default_value(false)->implicit_value(true),
+                ("help,h", value<bool>()->default_value(false)
+                 ->implicit_value(true),
                  "produce help message")
-                ("testnet,t", value<bool>()->default_value(false)->implicit_value(true),
+                ("testnet,t", value<bool>()->default_value(false)
+                 ->implicit_value(true),
                  "use testnet blockchain")
-                ("stagenet,s", value<bool>()->default_value(false)->implicit_value(true),
+                ("stagenet,s", value<bool>()->default_value(false)
+                 ->implicit_value(true),
                  "use stagenet blockchain")
-                ("do-not-relay", value<bool>()->default_value(false)->implicit_value(true),
-                 "does not relay txs to other nodes. useful when testing construction and submiting txs")
+                ("do-not-relay", value<bool>()->default_value(false)
+                 ->implicit_value(true),
+                 "does not relay txs to other nodes. useful "
+                 "when testing construction and submiting txs")
                 ("port,p", value<string>()->default_value("1984"),
-                 "default port for restbed service of Open Monero")
-                ("config-file,c", value<string>()->default_value("./config/config.json"),
-                 "Config file path.");
+                 "default port for restbed service of Loki Locker")
+                ("config-file,c", value<string>()
+                 ->default_value("./config/config.json"),
+                 "Config file path.")
+                ("log-file,l", value<string>()
+                 ->default_value("./loki-locker.log"),
+                 "Name and path to log file. -l \"\" to disable log file.");
 
 
         store(command_line_parser(acc, avv)

@@ -1,0 +1,66 @@
+.nav {
+  position: relative;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px none #e6ebf2;
+  background-color: $navBgColor;
+  box-shadow: none;
+  font-family: Proximanova, sans-serif;
+}
+.nav-link {
+  margin-top: 24px;
+  margin-right: 0px;
+  margin-left: 30px;
+  padding: 0px;
+  color: $navText;
+  text-align: left;
+  text-decoration: none;
+  font-family: Proximanova, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+
+  &:hover {
+    color: $navHoverText;
+    text-decoration: none;
+  }
+  &.login {
+    margin-top: 20px;
+    margin-right: 0px;
+    padding: 6px 24px 4px;
+    border: 0;
+    border-radius: 200px;
+    color: $loginText;
+    background-color: $loginBg;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 12px;
+
+    &:hover {
+      background-size: auto;
+      background: $loginHoverBg none repeat scroll 0% 0%;
+      color: $loginHoverText;
+    }
+  }
+  &.w--current {
+    margin-top: 20px;
+    padding: 3px 12px 0px;
+    border-radius: 2px;
+    background-color: $navActiveBg;
+    color: $navActiveText;
+    line-height: 20px;
+
+    &:hover {
+      color: $navHoverText;
+    }
+  }
+}
+.nav-menu {
+  display: block;
+  margin-top: 0px;
+  margin-bottom: 18px;
+}
+
+.nav-logo {
+  height: 40px;
+  margin-bottom: 12px;
+}

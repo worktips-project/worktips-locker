@@ -464,9 +464,3 @@ table {
   color: #767d85;
   cursor: pointer;
 }
-
-/* line 47, ../sass/screen.scss */
-.account-catchup-alert .w-form-done {
-  background-color: #5093eb;
-  margin-top: 20px;
-}

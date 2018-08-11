@@ -26,7 +26,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-thinwalletCtrls.controller('TransactionsCtrl', function ($scope, $rootScope, $http, $interval, AccountService) {
+thinwalletCtrls.controller('TransactionsCtrl', function ($scope, $rootScope, $http, $interval,
+                                                         AccountService, ModalService) {
     "use strict";
 
     $scope.pageNum = 0;
@@ -56,7 +57,6 @@ thinwalletCtrls.controller('TransactionsCtrl', function ($scope, $rootScope, $ht
             $scope.reverse = true;
         }
         $scope.pageNum = 0;
-        tx_detail_hashes = [];
     };
 
     $scope.getNumPages = function () {
@@ -69,7 +69,6 @@ thinwalletCtrls.controller('TransactionsCtrl', function ($scope, $rootScope, $ht
             return;
         }
         $scope.pageNum = newPageNum;
-        tx_detail_hashes = [];
     };
 
     $rootScope.$watch('account', $scope.fetchTransactions);
@@ -80,20 +79,10 @@ thinwalletCtrls.controller('TransactionsCtrl', function ($scope, $rootScope, $ht
         $interval.cancel(fetchInterval);
     });
 
-    var tx_detail_hashes = [];
-
-    $scope.toggle_tx_detail = function(tx) {
-        var index = tx_detail_hashes.indexOf(tx.hash);
-        if(tx_detail_hashes.indexOf(tx.hash) === -1) {
-            tx_detail_hashes.push(tx.hash);
-        } else {
-            tx_detail_hashes.splice(index, 1)
-        }
+    $scope.show_tx_detail = function(tx) {
+      ModalService.show("transaction-details?tx_hash=" + tx.hash);
     };
 
-    $scope.showing_tx_detail = function(tx) {
-        return tx_detail_hashes.indexOf(tx.hash) !== -1;
-    };
 });
 
 thinwalletCtrls.filter('startFrom', function () {

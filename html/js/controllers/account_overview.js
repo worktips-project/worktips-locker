@@ -28,7 +28,7 @@
 
 thinwalletCtrls.controller('AccountOverviewCtrl', function ($scope, $rootScope, $http,
                                                             $interval, AccountService,
-                                                            EVENT_CODES) {
+                                                            ModalService) {
     "use strict";
 
     $rootScope.$watch('account', $scope.fetchTransactions);
@@ -41,18 +41,8 @@ thinwalletCtrls.controller('AccountOverviewCtrl', function ($scope, $rootScope, 
         $interval.cancel(fetchInterval);
     });
 
-    var tx_detail_hashes = [];
-
-    $scope.toggle_tx_detail = function(tx) {
-        var index = tx_detail_hashes.indexOf(tx.hash);
-        if(tx_detail_hashes.indexOf(tx.hash) === -1) {
-            tx_detail_hashes.push(tx.hash);
-        } else {
-            tx_detail_hashes.splice(index, 1)
-        }
+    $scope.show_tx_detail = function(tx) {
+      ModalService.show("transaction-details?tx_hash=" + tx.hash);
     };
 
-    $scope.showing_tx_detail = function(tx) {
-        return tx_detail_hashes.indexOf(tx.hash) !== -1;
-    };
 });
