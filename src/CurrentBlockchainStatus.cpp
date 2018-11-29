@@ -5,8 +5,6 @@
 #include "CurrentBlockchainStatus.h"
 
 
-
-
 #undef MONERO_DEFAULT_LOG_CATEGORY
 #define MONERO_DEFAULT_LOG_CATEGORY "openloki"
 
@@ -41,11 +39,15 @@ CurrentBlockchainStatus::monitor_blockchain()
            if (stop_blockchain_monitor_loop)
                break;
 
-           update_current_blockchain_height();
+           update_current_blockchain_height();           
+
            read_mempool();
+
            OMINFO << "Current blockchain height: " << current_height
                   << ", no of mempool txs: " << mempool_txs.size();
+
            clean_search_thread_map();
+
            std::this_thread::sleep_for(
                    std::chrono::seconds(
                     bc_setup.refresh_block_status_every_seconds));
@@ -91,7 +93,7 @@ CurrentBlockchainStatus::is_tx_unlocked(
 
 
 bool
-CurrentBlockchainStatus::get_block(uint64_t height, block &blk)
+CurrentBlockchainStatus::get_block(uint64_t height, block& blk)
 {
     return mcore->get_block_from_height(height, blk);
 }
@@ -194,7 +196,7 @@ CurrentBlockchainStatus::get_tx_with_output(
         // and second is local index of the output i in that tx
         tx_out_idx = mcore->get_output_tx_and_index(amount, output_idx);
     }
-    catch (const OUTPUT_DNE &e)
+    catch (const OUTPUT_DNE& e)
     {
 
         string out_msg = fmt::format(
@@ -202,7 +204,7 @@ CurrentBlockchainStatus::get_tx_with_output(
                 amount, output_idx
         );
 
-        OMERROR << out_msg;
+        OMERROR << out_msg << ' ' << e.what();
 
         return false;
     }
@@ -220,9 +222,10 @@ CurrentBlockchainStatus::get_tx_with_output(
 }
 
 bool
-CurrentBlockchainStatus::get_output_keys(const uint64_t& amount,
-            const vector<uint64_t>& absolute_offsets,
-            vector<cryptonote::output_data_t>& outputs)
+CurrentBlockchainStatus::get_output_keys(
+        const uint64_t& amount,
+        const vector<uint64_t>& absolute_offsets,
+        vector<cryptonote::output_data_t>& outputs)
 {
     try
     {
@@ -284,27 +287,30 @@ CurrentBlockchainStatus::get_amount_specific_indices(
     return false;
 }
 
+unique_ptr<RandomOutputs>
+CurrentBlockchainStatus::create_random_outputs_object(
+        vector<uint64_t> const& amounts,
+        uint64_t outs_count) const
+{
+    return make_unique<RandomOutputs>(*mcore, amounts, outs_count);
+}
+
 bool
 CurrentBlockchainStatus::get_random_outputs(
-        const vector<uint64_t>& amounts,
-        const uint64_t& outs_count,
-        vector<COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS
-            ::outs_for_amount>& found_outputs)
-{
+        vector<uint64_t> const& amounts,
+        uint64_t outs_count,
+        RandomOutputs::outs_for_amount_v& found_outputs)
+{   
+    unique_ptr<RandomOutputs> ro
+            = create_random_outputs_object(amounts, outs_count);
 
-    COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::request req;
-    COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::response res;
-
-    req.outs_count = outs_count;
-    req.amounts = amounts;
-
-    if (!mcore->get_random_outs_for_amounts(req, res))
+    if (!ro->find_random_outputs())
     {
-        OMERROR << "mcore->get_random_outs_for_amounts(req, res) failed";
+        OMERROR << "!ro.find_random_outputs()";
         return false;
     }
 
-    found_outputs = res.outs;
+    found_outputs = ro->get_found_outputs();
 
     return true;
 }
@@ -334,10 +340,30 @@ CurrentBlockchainStatus::get_output(
 uint64_t
 CurrentBlockchainStatus::get_dynamic_per_kb_fee_estimate() const
 {
-    return mcore->get_dynamic_per_kb_fee_estimate(
+    const double byte_to_kbyte_factor = 1024;
+
+    uint64_t fee_per_byte = mcore->get_dynamic_base_fee_estimate(
+                FEE_ESTIMATE_GRACE_BLOCKS);
+
+    uint64_t fee_per_kB = static_cast<uint64_t>(
+                fee_per_byte * byte_to_kbyte_factor);
+
+    return fee_per_kB;
+}
+
+uint64_t
+CurrentBlockchainStatus::get_dynamic_base_fee_estimate() const
+{
+    return mcore->get_dynamic_base_fee_estimate(
                 FEE_ESTIMATE_GRACE_BLOCKS);
 }
 
+uint64_t
+CurrentBlockchainStatus::get_tx_unlock_time(
+        crypto::hash const& tx_hash) const
+{
+    return mcore->get_tx_unlock_time(tx_hash);
+}
 
 bool
 CurrentBlockchainStatus::commit_tx(
@@ -423,7 +449,10 @@ CurrentBlockchainStatus::search_if_payment_made(
 
     mempool_txs_t mempool_transactions = get_mempool_txs();
 
-    uint64_t current_blockchain_height = current_height;
+    uint64_t current_blockchain_height = get_current_blockchain_height();
+
+    cout << "current_blockchain_height: "
+         << current_blockchain_height << '\n';
 
     vector<transaction> txs_to_check;
 
@@ -950,13 +979,26 @@ CurrentBlockchainStatus::clean_search_thread_map()
         if (search_thread_exist(st.first)
                 && st.second.get_functor().still_searching() == false)
         {
-            OMERROR << st.first << " still searching: "
-                 << st.second.get_functor().still_searching();
+
+            // before erasing a search thread, check if there was any
+            // exception thrown by it
+            try
+            {
+                auto eptr = st.second.get_functor().get_exception_ptr();
+                if (eptr != nullptr)
+                    std::rethrow_exception(eptr);
+            }
+            catch (std::exception const& e)
+            {
+                OMERROR << "Error in search thread: " << e.what()
+                        << ". It will be cleared.";
+            }
+
+            OMINFO << "Ereasing a search thread";
             searching_threads.erase(st.first);
         }
     }
 }
-
 
 tuple<string, string, string>
 CurrentBlockchainStatus::construct_output_rct_field(

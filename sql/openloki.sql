@@ -20,8 +20,11 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `openloki`
+-- Database: `lokilocker`
 --
+
+CREATE DATABASE IF NOT EXISTS `lokilocker` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `lokilocker`;
 
 -- --------------------------------------------------------
 

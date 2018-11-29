@@ -39,7 +39,7 @@
             <div class="w-col w-col-3 responsive-column">
               <div class="transaction-head">Date Received</div>
             </div>
-            <div class="w-col w-col-6 responsive-column">
+            <div class="w-col w-col-7 responsive-column">
               <div class="transaction-head">Transaction ID/Hash</div>
             </div>
           </div>
@@ -65,6 +65,9 @@
               </a>
             </div>
           </div>
+        </div>
+        <div class="w-form-fail error-backing" style="display: block;" ng-show="!!error">
+            <p>{{error}}</p>
         </div>
       </div>
   </div>

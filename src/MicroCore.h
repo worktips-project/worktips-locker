@@ -39,6 +39,12 @@ class MicroCore {
     bool initialization_succeeded {false};
 
 public:
+
+    //   <amoumt,
+    //    tuple<total_instances, unlocked_instances, recent_instances>
+    using histogram_map = std::map<uint64_t,
+                               std::tuple<uint64_t,  uint64_t, uint64_t>>;
+
     MicroCore();
 
     /**
@@ -92,6 +98,12 @@ public:
         return core_storage.get_db().get_blocks_range(h1, h2);
     }
 
+    virtual uint64_t
+    get_tx_unlock_time(crypto::hash const& tx_hash) const
+    {
+        return core_storage.get_db().get_tx_unlock_time(tx_hash);
+    }
+
     virtual bool
     have_tx(crypto::hash const& tx_hash) const
     {
@@ -137,25 +149,34 @@ public:
         return core_storage.get_current_blockchain_height();
     }
 
-    virtual bool
-    get_random_outs_for_amounts(
-            COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::request const& req,
-            COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::response& res) const
-    {
-        return core_storage.get_random_outs_for_amounts(req, res);
-    }
 
     virtual bool
-    get_outs(const COMMAND_RPC_GET_OUTPUTS_BIN::request& req,
+    get_output_histogram(
+            vector<uint64_t> const& amounts,
+            uint64_t min_count,
+            histogram_map& histogram,
+            bool unlocked = true,
+            uint64_t recent_cutoff = 0) const;
+
+
+    // mimicks core_rpc_server::on_get_output_histogram(..)
+    virtual bool
+    get_output_histogram(
+            COMMAND_RPC_GET_OUTPUT_HISTOGRAM::request const& req,
+            COMMAND_RPC_GET_OUTPUT_HISTOGRAM::response& res) const;
+
+
+    virtual bool
+    get_outs(COMMAND_RPC_GET_OUTPUTS_BIN::request const& req,
              COMMAND_RPC_GET_OUTPUTS_BIN::response& res) const
     {
         return core_storage.get_outs(req, res);
     }
 
     virtual uint64_t
-    get_dynamic_per_kb_fee_estimate(uint64_t const& grace_blocks) const
+    get_dynamic_base_fee_estimate(uint64_t const& grace_blocks) const
     {
-        return core_storage.get_dynamic_per_kb_fee_estimate(grace_blocks);
+        return core_storage.get_dynamic_base_fee_estimate(grace_blocks);
     }
 
     bool
