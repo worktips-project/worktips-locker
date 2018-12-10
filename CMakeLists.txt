@@ -146,7 +146,7 @@ set(LIBRARIES
 if(APPLE)
     set(LIBRARIES ${LIBRARIES} "-framework IOKit -framework Foundation")
 else()
-    set(LIBRARIES ${LIBRARIES} atomic pcsclite)
+    set(LIBRARIES ${LIBRARIES} atomic)
 endif()
 
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND NOT WIN32)
