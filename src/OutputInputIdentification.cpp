@@ -88,7 +88,7 @@ OutputInputIdentification::identify_outputs()
 
         // if mine output has RingCT, i.e., tx version is 2
         // need to decode its amount. otherwise its zero.
-        if (mine_output && tx->version == 2)
+        if (mine_output && tx->version >= 2)
         {
             // initialize with regular amount value
             // for ringct, except coinbase, it will be 0
