@@ -1436,8 +1436,16 @@ YourMoneroRequests::get_tx(
         // delivered the tx that was requested
         j_response["tx_hash"]  = pod_to_hex(tx_hash);
 
-        j_response["pub_key"]  = pod_to_hex(
-                    xmreg::get_tx_pub_key_from_received_outs(tx));
+        j_response["pub_key"] = "";
+        std::vector<public_key> tmp_keys = xmreg::get_tx_pub_keys_from_received_outs(tx);
+        if (tmp_keys.size() >= 2)
+        {
+            j_response["pub_key"]  = pod_to_hex(tmp_keys[1]);
+        }
+        else if (tmp_keys.size() != 0)
+        {
+            j_response["pub_key"]  = pod_to_hex(tmp_keys[0]);
+        }
 
 
         bool coinbase = is_coinbase(tx);

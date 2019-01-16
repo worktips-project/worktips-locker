@@ -74,7 +74,8 @@ public:
 
     crypto::hash tx_hash;
     crypto::hash tx_prefix_hash;
-    public_key tx_pub_key;
+    vector<public_key> tx_pub_keys;
+    int matched_pub_key_index;
 
     string tx_hash_str;
     string tx_prefix_hash_str;
@@ -94,7 +95,7 @@ public:
 
     // public transaction key is combined with our viewkey
     // to create, so called, derived key.
-    key_derivation derivation;
+    std::vector<key_derivation> derivations;
 
 
     vector<output_info> identified_outputs;

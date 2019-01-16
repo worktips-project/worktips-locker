@@ -522,9 +522,25 @@ CurrentBlockchainStatus::search_if_payment_made(
 
         // decrypt the encrypted_payment_id8
 
-        public_key tx_pub_key
-                = xmreg::get_tx_pub_key_from_received_outs(tx);
+        std::vector<public_key> tx_pub_keys = xmreg::get_tx_pub_keys_from_received_outs(tx);
 
+        public_key tx_pub_key;
+
+        // xmr puts 2 keys sometimes in normal transactions.  previously the above
+        // function returned the second of the two in this case, rather than all pub
+        // keys.
+        if (tx_pub_keys.size() == 2)
+        {
+            tx_pub_key = tx_pub_keys[1];
+        }
+        else if (tx_pub_keys.size())
+        {
+            tx_pub_key = tx_pub_keys[0];
+        }
+        else
+        {
+            tx_pub_key = null_pkey;
+        }
 
         // public transaction key is combined with our viewkey
         // to create, so called, derived key.
