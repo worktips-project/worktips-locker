@@ -374,7 +374,7 @@ CurrentBlockchainStatus::commit_tx(
 
     if (!rpc->commit_tx(tx_blob, error_msg, do_not_relay))
     {
-        OMERROR << "rpc->commit_tx() commit_tx failed";
+        OMERROR << "rpc->commit_tx() commit_tx failed, reason: " << error_msg;
         return false;
     }
 
@@ -575,9 +575,9 @@ CurrentBlockchainStatus::search_if_payment_made(
 
 
         //          <public_key  , amount  , out idx>
-        vector<tuple<txout_to_key, uint64_t, uint64_t>> outputs;
+        std::vector<outputs_tuple> outputs;
 
-        outputs = get_ouputs_tuple(tx);
+        outputs = get_outputs_tuple(tx);
 
         string tx_hash_str = pod_to_hex(get_transaction_hash(tx));
 
@@ -586,7 +586,13 @@ CurrentBlockchainStatus::search_if_payment_made(
 
         for (auto& out: outputs)
         {
-            txout_to_key txout_k = std::get<0>(out);
+            if (std::get<0>(out).type() != typeid(txout_to_key))
+            {
+                continue;
+            }
+
+            const txout_to_key& txout_k
+                = boost::get<cryptonote::txout_to_key>(std::get<0>(out));
             uint64_t amount = std::get<1>(out);
             uint64_t output_idx_in_tx = std::get<2>(out);
 
@@ -607,7 +613,7 @@ CurrentBlockchainStatus::search_if_payment_made(
 
             // if mine output has RingCT, i.e., tx version is 2
             // need to decode its amount. otherwise its zero.
-            if (mine_output && tx.version == 2)
+            if (mine_output && tx.version >= 2)
             {
                 // initialize with regular amount
                 uint64_t rct_amount = amount;

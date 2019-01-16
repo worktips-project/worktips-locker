@@ -26,7 +26,7 @@ OutputInputIdentification::OutputInputIdentification(
     tx_is_coinbase = is_coinbase;
     tx_hash = _tx_hash;
 
-    is_rct = (tx->version == 2);
+    is_rct = (tx->version >= 2);
 
     if (is_rct)
     {
@@ -58,12 +58,17 @@ void
 OutputInputIdentification::identify_outputs()
 {
     //          <public_key  , amount  , out idx>
-    vector<tuple<txout_to_key, uint64_t, uint64_t>> outputs
-            = get_ouputs_tuple(*tx);
+    std::vector<outputs_tuple> outputs = get_outputs_tuple(*tx);
 
     for (auto& out: outputs)
     {
-        txout_to_key const& txout_k = std::get<0>(out);
+        if (std::get<0>(out).type() != typeid(txout_to_key))
+        {
+            continue;
+        }
+
+        const txout_to_key& txout_k
+            = boost::get<cryptonote::txout_to_key>(std::get<0>(out));
         uint64_t amount             = std::get<1>(out);
         uint64_t output_idx_in_tx   = std::get<2>(out);
 

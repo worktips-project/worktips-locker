@@ -147,8 +147,8 @@ get_mixin_no_in_txs(const vector<transaction>& txs);
 vector<pair<txout_to_key, uint64_t>>
 get_ouputs(const transaction& tx);
 
-vector<tuple<txout_to_key, uint64_t, uint64_t>>
-get_ouputs_tuple(const transaction& tx);
+typedef tuple<txout_target_v, uint64_t, uint64_t> outputs_tuple;
+vector<outputs_tuple> get_outputs_tuple(const transaction& tx);
 
 vector<txin_to_key>
 get_key_images(const transaction& tx);
@@ -201,8 +201,8 @@ parse_crow_post_data(const string& req_body);
 
 // based on
 // crypto::public_key wallet2::get_tx_pub_key_from_received_outs(const tools::wallet2::transfer_details &td) const
-public_key
-get_tx_pub_key_from_received_outs(const transaction &tx);
+vector<public_key>
+get_tx_pub_keys_from_received_outs(const transaction &tx);
 
 
 string

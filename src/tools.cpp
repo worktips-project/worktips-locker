@@ -559,24 +559,13 @@ get_ouputs(const transaction& tx)
 
 };
 
-vector<tuple<txout_to_key, uint64_t, uint64_t>>
-get_ouputs_tuple(const transaction& tx)
+vector<outputs_tuple> get_outputs_tuple(const transaction& tx)
 {
-    vector<tuple<txout_to_key, uint64_t, uint64_t>> outputs;
+   vector<outputs_tuple> outputs;
 
     for (uint64_t n = 0; n < tx.vout.size(); ++n)
     {
-
-        if (tx.vout[n].target.type() != typeid(txout_to_key))
-        {
-            continue;
-        }
-
-        // get tx input key
-        const txout_to_key& txout_key
-                = boost::get<cryptonote::txout_to_key>(tx.vout[n].target);
-
-        outputs.push_back(make_tuple(txout_key, tx.vout[n].amount, n));
+        outputs.push_back(make_tuple(tx.vout[n].target, tx.vout[n].amount, n));
     }
 
     return outputs;
@@ -926,8 +915,8 @@ parse_crow_post_data(const string& req_body)
 
 // based on
 // crypto::public_key wallet2::get_tx_pub_key_from_received_outs(const tools::wallet2::transfer_details &td) const
-public_key
-get_tx_pub_key_from_received_outs(const transaction &tx)
+std::vector<public_key>
+get_tx_pub_keys_from_received_outs(const transaction &tx)
 {
     std::vector<tx_extra_field> tx_extra_fields;
 
@@ -936,36 +925,19 @@ get_tx_pub_key_from_received_outs(const transaction &tx)
         // Extra may only be partially parsed, it's OK if tx_extra_fields contains public key
     }
 
-    // Due to a previous bug, there might be more than one tx pubkey in extra, one being
-    // the result of a previously discarded signature.
-    // For speed, since scanning for outputs is a slow process, we check whether extra
-    // contains more than one pubkey. If not, the first one is returned. If yes, they're
-    // checked for whether they yield at least one output
+    // NOTE(Loki): Loki miner transactions include two pubkeys, one for the miner and
+    // one for the governance/service node rewards.
     tx_extra_pub_key pub_key_field;
+    std::vector<public_key> tx_pub_keys;
+    size_t i = 0;
 
-    if (!find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, 0))
+    while (find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, i))
     {
-        return null_pkey;
+       tx_pub_keys.push_back(pub_key_field.pub_key);
+       i++;
     }
 
-    public_key tx_pub_key = pub_key_field.pub_key;
-
-    bool two_found = find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, 1);
-
-    if (!two_found)
-    {
-        // easy case, just one found
-        return tx_pub_key;
-    }
-    else
-    {
-        // just return second one if there are two.
-        // this does not require private view key, as
-        // its not needed for my use case.
-        return pub_key_field.pub_key;
-    }
-
-    return null_pkey;
+    return tx_pub_keys;
 }
 
 

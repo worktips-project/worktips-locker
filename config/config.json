@@ -3,7 +3,7 @@
   {
     "_comment" : "RPC urls to monero deamon",
     "mainnet"  : "http://127.0.0.1:22023",
-    "testnet"  : "http://127.0.0.1:38151",
+    "testnet"  : "http://127.0.0.1:38157",
     "stagenet" : "http://127.0.0.1:38154"
   },
   "blockchain-path" :
@@ -18,7 +18,7 @@
     "_comment" : "how should the backend connect to the mysql database",
     "url"      : "127.0.0.1",
     "port"     : 3306,
-    "dbname"   : "openloki",
+    "dbname"   : "lokilocker",
     "user"     : "root",
     "password" : ""
   },
