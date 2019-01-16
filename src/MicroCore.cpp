@@ -22,7 +22,8 @@ namespace xmreg
  */
 MicroCore::MicroCore():      
         m_mempool(core_storage),
-        core_storage(m_mempool),
+        core_storage(m_mempool, m_service_node_list, m_deregister_vote_pool),
+        m_service_node_list(core_storage),
         m_device {&hw::get_device("default")}
 {
 
@@ -144,6 +145,73 @@ MicroCore::get_tx(crypto::hash const& tx_hash, transaction& tx) const
 
     return true;
 }
+
+bool
+MicroCore::get_output_histogram(
+        vector<uint64_t> const& amounts,
+        uint64_t min_count,
+        histogram_map& histogram,
+        bool unlocked,
+        uint64_t recent_cutoff) const
+{
+    try
+    {
+        histogram = core_storage.get_output_histogram(
+                        amounts,
+                        unlocked,
+                        recent_cutoff,
+                        min_count);
+    }
+    catch (std::exception const& e)
+    {
+        cerr << e.what() << endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool
+MicroCore::get_output_histogram(
+        COMMAND_RPC_GET_OUTPUT_HISTOGRAM::request const& req,
+        COMMAND_RPC_GET_OUTPUT_HISTOGRAM::response& res) const
+{
+    // based on bool core_rpc_server::on_get_output_histogram(const ...        
+
+    MicroCore::histogram_map histogram;
+
+    if (!get_output_histogram(req.amounts,
+                              req.min_count,
+                              histogram,
+                              req.unlocked,
+                              req.recent_cutoff))
+    {
+        return false;
+    }
+
+
+    res.histogram.clear();
+    res.histogram.reserve(histogram.size());
+
+    for (auto const& i: histogram)
+    {
+      if (std::get<0>(i.second)
+              >= req.min_count
+              && (std::get<0>(i.second) <= req.max_count
+                  || req.max_count == 0))
+        res.histogram.push_back(
+                    COMMAND_RPC_GET_OUTPUT_HISTOGRAM::entry(
+                        i.first,
+                        std::get<0>(i.second),
+                        std::get<1>(i.second),
+                        std::get<2>(i.second)));
+    }
+
+    res.status = CORE_RPC_STATUS_OK;
+
+    return true;
+}
+
 
 hw::device* const
 MicroCore::get_device() const

@@ -15,18 +15,19 @@ OutputInputIdentification::OutputInputIdentification(
     crypto::hash const& _tx_hash,
     bool is_coinbase,
     std::shared_ptr<CurrentBlockchainStatus> _current_bc_status)
-    : total_received {0}, mixin_no {0}, current_bc_status {_current_bc_status}
+    : current_bc_status {_current_bc_status}
 {
+    matched_pub_key_index = -1;
     address_info = _a;
     viewkey = _v;
     tx = _tx;
 
-    tx_pub_key  = xmreg::get_tx_pub_key_from_received_outs(*tx);
+    tx_pub_keys  = xmreg::get_tx_pub_keys_from_received_outs(*tx);
 
     tx_is_coinbase = is_coinbase;
     tx_hash = _tx_hash;
 
-    is_rct = (tx->version == 2);
+    is_rct = (tx->version >= 2);
 
     if (is_rct)
     {
@@ -34,15 +35,19 @@ OutputInputIdentification::OutputInputIdentification(
     }
 
 
-    if (!generate_key_derivation(tx_pub_key, *viewkey, derivation))
+    for (const auto& tx_pub_key : tx_pub_keys)
     {
-        cerr << "Cant get derived key for: "  << "\n"
-             << "pub_tx_key: " << get_tx_pub_key_str() << " and "
-             << "prv_view_key" << viewkey << endl;
+        derivations.resize(derivations.size() + 1);
+        if (!generate_key_derivation(tx_pub_key, *viewkey, derivations.back()))
+        {
+            OMERROR << "Cant get derived key for: "  << "\n"
+                 << "pub_tx_key: " << pod_to_hex(tx_pub_key) << " and "
+                 << "prv_view_key" << viewkey;;
 
-        throw OutputInputIdentificationException("Cant get derived key for a tx");
+            throw OutputInputIdentificationException(
+                        "Cant get derived key for a tx");
+        }
     }
-
 }
 
 uint64_t
@@ -58,37 +63,46 @@ void
 OutputInputIdentification::identify_outputs()
 {
     //          <public_key  , amount  , out idx>
-    vector<tuple<txout_to_key, uint64_t, uint64_t>> outputs = get_ouputs_tuple(*tx);
+    std::vector<outputs_tuple> outputs = get_outputs_tuple(*tx);
 
     for (auto& out: outputs)
     {
-        txout_to_key const& txout_k = std::get<0>(out);
+        if (std::get<0>(out).type() != typeid(txout_to_key))
+        {
+            continue;
+        }
+
+        const txout_to_key& txout_k
+            = boost::get<cryptonote::txout_to_key>(std::get<0>(out));
         uint64_t amount             = std::get<1>(out);
         uint64_t output_idx_in_tx   = std::get<2>(out);
 
         // get the tx output public key
         // that normally would be generated for us,
         // if someone had sent us some xmr.
-        public_key generated_tx_pubkey;
 
-        derive_public_key(derivation,
-                          output_idx_in_tx,
-                          address_info->address.m_spend_public_key,
-                          generated_tx_pubkey);
-
-        // check if generated public key matches the current output's key
-        bool mine_output = (txout_k.key == generated_tx_pubkey);
-
-        // placeholder variable for ringct outputs info
-        // that we need to save in database
-        string rtc_outpk;
-        string rtc_mask;
-        string rtc_amount;
-
-        // if mine output has RingCT, i.e., tx version is 2
-        // need to decode its amount. otherwise its zero.
-        if (mine_output && tx->version == 2)
+        size_t matched_index = 0;
+        for (const auto& derivation : derivations)
         {
+            matched_index++;
+            public_key generated_tx_pubkey;
+
+            derive_public_key(derivation,
+                    output_idx_in_tx,
+                    address_info->address.m_spend_public_key,
+                    generated_tx_pubkey);
+
+            // check if generated public key matches the current output's key
+            if (txout_k.key != generated_tx_pubkey) continue;
+
+            matched_pub_key_index = matched_index - 1;
+
+            // placeholder variable for ringct outputs info
+            // that we need to save in database
+            string rtc_outpk;
+            string rtc_mask;
+            string rtc_amount;
+
             // initialize with regular amount value
             // for ringct, except coinbase, it will be 0
             uint64_t rct_amount_val = amount;
@@ -99,49 +113,58 @@ OutputInputIdentification::identify_outputs()
             {
                 bool r;
 
-                // for ringct non-coinbase txs, these values are provided with txs.
+                // for ringct non-coinbase txs, these values are given
+                // with txs.
                 // coinbase ringctx dont have this information. we will provide
                 // them only when needed, in get_unspent_outputs. So go there
-                // to see how we deal with ringct coinbase txs when we spent them
+                // to see how we deal with ringct coinbase txs when we spent
+                // them
                 // go to CurrentBlockchainStatus::construct_output_rct_field
-                // to see how we deal with coinbase ringct that are used as mixins
-                rtc_outpk  = pod_to_hex(tx->rct_signatures.outPk[output_idx_in_tx].mask);
-                rtc_mask   = pod_to_hex(tx->rct_signatures.ecdhInfo[output_idx_in_tx].mask);
-                rtc_amount = pod_to_hex(tx->rct_signatures.ecdhInfo[output_idx_in_tx].amount);
+                // to see how we deal with coinbase ringct that are used
+                // as mixins
+                rtc_outpk  = pod_to_hex(tx->rct_signatures
+                        .outPk[output_idx_in_tx].mask);
+                rtc_mask   = pod_to_hex(tx->rct_signatures
+                        .ecdhInfo[output_idx_in_tx].mask);
+                rtc_amount = pod_to_hex(tx->rct_signatures
+                        .ecdhInfo[output_idx_in_tx].amount);
 
-                rct::key mask =  tx->rct_signatures.ecdhInfo[output_idx_in_tx].mask;
+                rct::key mask =  tx->rct_signatures
+                    .ecdhInfo[output_idx_in_tx].mask;
 
-                r = decode_ringct(tx->rct_signatures,
-                                  tx_pub_key,
-                                  *viewkey,
-                                  output_idx_in_tx,
-                                  mask,
-                                  rct_amount_val);
+                // could keep track of which key goes with which output, but
+                // this should be fine
+                for (const auto& tx_pub_key : tx_pub_keys)
+                {
+                    r = decode_ringct(tx->rct_signatures,
+                            tx_pub_key,
+                            *viewkey,
+                            output_idx_in_tx,
+                            mask,
+                            rct_amount_val);
+                    if (r) break;
+                }
 
                 if (!r)
                 {
-                    cerr << "Cant decode ringCT!" << endl;
-                    throw OutputInputIdentificationException("Cant decode ringCT!");
+                    OMERROR << "Cant decode ringCT!";
+                    throw OutputInputIdentificationException(
+                            "Cant decode ringCT!");
                 }
 
                 amount = rct_amount_val;
 
             } // if (!tx_is_coinbase)
 
-        } // if (mine_output && tx.version == 2)
-
-        if (mine_output)
-        {
             total_received += amount;
 
             identified_outputs.emplace_back(
-                    output_info{
-                            txout_k.key, amount, output_idx_in_tx,
-                            rtc_outpk, rtc_mask, rtc_amount
-                    });
+                        output_info{
+                                txout_k.key, amount, output_idx_in_tx,
+                                rtc_outpk, rtc_mask, rtc_amount
+                        });
 
-        } //  if (mine_output)
-
+        }
     } // for (const auto& out: outputs)
 
 }
@@ -163,30 +186,30 @@ OutputInputIdentification::identify_inputs(
                 = cryptonote::relative_output_offsets_to_absolute(
                         in_key.key_offsets);
 
-        // get public keys of outputs used in the mixins that match to the offests
+        // get public keys of outputs used in the mixins that
+        // match to the offests
         std::vector<cryptonote::output_data_t> mixin_outputs;
 
         if (!current_bc_status->get_output_keys(in_key.amount,
                                                 absolute_offsets,
                                                 mixin_outputs))
         {
-            cerr << "Mixins key images not found" << endl;
+            OMERROR << "Mixins key images not found";
             continue;
         }
-
-        // mixin counter
-        size_t count = 0;
 
         // indicates whether we found any matching mixin in the current input
         bool found_a_match {false};
 
         // for each found output public key check if its ours or not
-        for (const uint64_t& abs_offset: absolute_offsets)
+        for (size_t count = 0; count < absolute_offsets.size(); ++count)
         {
             // get basic information about mixn's output
-            cryptonote::output_data_t output_data = mixin_outputs[count];
+            cryptonote::output_data_t const& output_data
+                    = mixin_outputs[count];
 
-            //cout << " - output_public_key_str: " << output_public_key_str << endl;
+            //cout << " - output_public_key_str: "
+            // << output_public_key_str;
 
             // before going to the mysql, check our known outputs cash
             // if the key exists. Its much faster than going to mysql
@@ -195,7 +218,7 @@ OutputInputIdentification::identify_inputs(
             auto it = known_outputs_keys.find(output_data.pubkey);
 
             if (it != known_outputs_keys.end())
-            {
+            {                                                
                 // this seems to be our mixin.
                 // save it into identified_inputs vector
 
@@ -204,11 +227,10 @@ OutputInputIdentification::identify_inputs(
                         it->second, // amount
                         output_data.pubkey});
 
+                //cout << "\n\n" << it->second << endl;
+
                 found_a_match = true;
-
             }
-
-            ++count;
 
         } // for (const cryptonote::output_data_t& output_data: outputs)
 
@@ -228,7 +250,7 @@ OutputInputIdentification::identify_inputs(
                 break;
         }
 
-    } // for (const txin_to_key& in_key: input_key_imgs)
+    } //   for (txin_to_key const& in_key: input_key_imgs)
 
 }
 
@@ -258,8 +280,15 @@ OutputInputIdentification::get_tx_prefix_hash_str()
 string const&
 OutputInputIdentification::get_tx_pub_key_str()
 {
-    if (tx_pub_key_str.empty())
-        tx_pub_key_str = pod_to_hex(tx_pub_key);
+    if (matched_pub_key_index != -1)
+        tx_pub_key_str = pod_to_hex(tx_pub_keys[matched_pub_key_index]);
+    else if (tx_pub_key_str.empty())
+    {
+        if (tx_pub_keys.size() >= 2) // xmr two-pub-key case, keeping for posterity
+            tx_pub_key_str = pod_to_hex(tx_pub_keys[1]);
+        else if (tx_pub_keys.size() != 0)
+            tx_pub_key_str = pod_to_hex(tx_pub_keys[0]);
+    }
 
     return tx_pub_key_str;
 }

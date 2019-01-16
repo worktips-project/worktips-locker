@@ -15,6 +15,7 @@
 #define OUTPUT_EXPORT_FILE_MAGIC "Monero output export\003"
 
 #define FEE_ESTIMATE_GRACE_BLOCKS 10
+#define RECENT_OUTPUT_ZONE ((time_t)(RECENT_OUTPUT_DAYS * 86400))
 
 #include "version.h"
 
@@ -23,6 +24,8 @@
 
 #include "cryptonote_core/tx_pool.h"
 #include "cryptonote_core/blockchain.h"
+#include "cryptonote_core/service_node_list.h"
+#include "cryptonote_core/service_node_deregister.h"
 #include "blockchain_db/lmdb/db_lmdb.h"
 
 #include "wallet/wallet2.h"

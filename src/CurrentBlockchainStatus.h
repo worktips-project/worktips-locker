@@ -12,6 +12,7 @@
 #include "ThreadRAII.h"
 #include "RPCCalls.h"
 #include "MySqlAccounts.h"
+#include "RandomOutputs.h"
 
 #include <iostream>
 #include <memory>
@@ -40,6 +41,8 @@ class CurrentBlockchainStatus
         : public std::enable_shared_from_this<CurrentBlockchainStatus>
 {
 public:
+
+
     // vector of mempool transactions that all threads
     // can refer to
     //                               recieved_time, tx
@@ -133,13 +136,19 @@ public:
                                 vector<uint64_t>& out_indices);
 
     virtual bool
-    get_random_outputs(const vector<uint64_t>& amounts,
-                       const uint64_t& outs_count,
-                       vector<COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS
-                        ::outs_for_amount>& found_outputs);
+    get_random_outputs(vector<uint64_t> const& amounts,
+                       uint64_t outs_count,
+                       RandomOutputs::outs_for_amount_v&
+                       found_outputs);
 
     virtual uint64_t
     get_dynamic_per_kb_fee_estimate() const;
+
+    virtual uint64_t
+    get_dynamic_base_fee_estimate() const;
+
+    virtual uint64_t
+    get_tx_unlock_time(crypto::hash const& tx_hash) const;
 
     virtual bool
     commit_tx(const string& tx_blob, string& error_msg,
@@ -302,6 +311,14 @@ protected:
 
     // to synchronize access to mempool_txs vector
     mutex getting_mempool_txs;
+
+    // have this method will make it easier to moc
+    // RandomOutputs in our tests later
+    virtual unique_ptr<RandomOutputs>
+    create_random_outputs_object(
+            vector<uint64_t> const& amounts,
+            uint64_t outs_count) const;
+
 };
 
 

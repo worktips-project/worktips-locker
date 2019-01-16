@@ -83,7 +83,7 @@ parse_str_address(const string& address_str,
 
     if (!get_account_address_from_str(address_info, net_type, address_str))
     {
-        cerr << "Error getting address: " << address_str << '\n';
+        //cerr << "Error getting address: " << address_str << '\n';
         return false;
     }
 
@@ -559,24 +559,13 @@ get_ouputs(const transaction& tx)
 
 };
 
-vector<tuple<txout_to_key, uint64_t, uint64_t>>
-get_ouputs_tuple(const transaction& tx)
+vector<outputs_tuple> get_outputs_tuple(const transaction& tx)
 {
-    vector<tuple<txout_to_key, uint64_t, uint64_t>> outputs;
+   vector<outputs_tuple> outputs;
 
     for (uint64_t n = 0; n < tx.vout.size(); ++n)
     {
-
-        if (tx.vout[n].target.type() != typeid(txout_to_key))
-        {
-            continue;
-        }
-
-        // get tx input key
-        const txout_to_key& txout_key
-                = boost::get<cryptonote::txout_to_key>(tx.vout[n].target);
-
-        outputs.push_back(make_tuple(txout_key, tx.vout[n].amount, n));
+        outputs.push_back(make_tuple(tx.vout[n].target, tx.vout[n].amount, n));
     }
 
     return outputs;
@@ -829,7 +818,7 @@ decode_ringct(const rct::rctSig& rv,
         switch (rv.type)
         {
             case rct::RCTTypeSimple:
-            case rct::RCTTypeSimpleBulletproof:
+            case rct::RCTTypeBulletproof:
                 amount = rct::decodeRctSimple(rv,
                                               rct::sk2rct(scalar1),
                                               i,
@@ -837,7 +826,6 @@ decode_ringct(const rct::rctSig& rv,
                                               hw::get_device("default"));
                 break;
             case rct::RCTTypeFull:
-            case rct::RCTTypeFullBulletproof:
                 amount = rct::decodeRct(rv,
                                         rct::sk2rct(scalar1),
                                         i,
@@ -927,8 +915,8 @@ parse_crow_post_data(const string& req_body)
 
 // based on
 // crypto::public_key wallet2::get_tx_pub_key_from_received_outs(const tools::wallet2::transfer_details &td) const
-public_key
-get_tx_pub_key_from_received_outs(const transaction &tx)
+std::vector<public_key>
+get_tx_pub_keys_from_received_outs(const transaction &tx)
 {
     std::vector<tx_extra_field> tx_extra_fields;
 
@@ -937,36 +925,19 @@ get_tx_pub_key_from_received_outs(const transaction &tx)
         // Extra may only be partially parsed, it's OK if tx_extra_fields contains public key
     }
 
-    // Due to a previous bug, there might be more than one tx pubkey in extra, one being
-    // the result of a previously discarded signature.
-    // For speed, since scanning for outputs is a slow process, we check whether extra
-    // contains more than one pubkey. If not, the first one is returned. If yes, they're
-    // checked for whether they yield at least one output
+    // NOTE(Loki): Loki miner transactions include two pubkeys, one for the miner and
+    // one for the governance/service node rewards.
     tx_extra_pub_key pub_key_field;
+    std::vector<public_key> tx_pub_keys;
+    size_t i = 0;
 
-    if (!find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, 0))
+    while (find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, i))
     {
-        return null_pkey;
+       tx_pub_keys.push_back(pub_key_field.pub_key);
+       i++;
     }
 
-    public_key tx_pub_key = pub_key_field.pub_key;
-
-    bool two_found = find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, 1);
-
-    if (!two_found)
-    {
-        // easy case, just one found
-        return tx_pub_key;
-    }
-    else
-    {
-        // just return second one if there are two.
-        // this does not require private view key, as
-        // its not needed for my use case.
-        return pub_key_field.pub_key;
-    }
-
-    return null_pkey;
+    return tx_pub_keys;
 }
 
 
@@ -974,7 +945,7 @@ get_tx_pub_key_from_received_outs(const transaction &tx)
 string
 xmr_amount_to_str(const uint64_t& xmr_amount, string format)
 {
-    return fmt::format("{:0.12f}", XMR_AMOUNT(xmr_amount));
+    return fmt::format(format, XMR_AMOUNT(xmr_amount));
 }
 
 
@@ -1031,19 +1002,6 @@ is_output_ours(const size_t& output_index,
 }
 
 
-bool
-get_real_output_for_key_image(const key_image& ki,
-                              const transaction& tx,
-                              const secret_key& private_view_key,
-                              const public_key& public_spend_key,
-                              uint64_t output_idx,
-                              public_key output_pub_key)
-{
-
-
-
-    return false;
-}
 
 
 bool
@@ -1352,14 +1310,10 @@ tx_to_hex(transaction const& tx)
     return epee::string_tools::buff_to_hex_nodelimer(t_serializable_object_to_blob(tx));
 }
 
-string
-hex_to_tx_blob(string const& tx_hex)
+bool
+hex_to_tx_blob(string const& tx_hex, string& tx_blob)
 {
-    std::string tx_blob;
-
-    epee::string_tools::parse_hexstr_to_binbuff(tx_hex, tx_blob);
-
-    return tx_blob;
+    return epee::string_tools::parse_hexstr_to_binbuff(tx_hex, tx_blob);
 }
 
 bool
@@ -1435,6 +1389,145 @@ blocks_and_txs_from_complete_blocks(
 
     return true;
 }
+
+bool
+addr_and_viewkey_from_string(string const& addres_str,
+                             string const& viewkey_str,
+                             network_type net_type,
+                             address_parse_info& address,
+                             crypto::secret_key& viewkey)
+{
+    if (!xmreg::parse_str_address(addres_str, address, net_type))
+        return false;
+
+    if (!xmreg::parse_str_secret_key(viewkey_str, viewkey))
+          return false;
+
+    return true;
+}
+
+bool
+output_data_from_hex(
+        string const& out_data_hex,
+        std::map<vector<uint64_t>,
+                 vector<cryptonote::output_data_t>>&
+                     outputs_data_map)
+{
+    // key: vector of absolute_offsets and associated amount (last value),
+    // value: vector of output_info_of_mixins as string
+    std::map<vector<uint64_t>, vector<string>> outputs_data_map_str;
+
+    try
+    {
+        string out_data_blob;
+
+        if (!epee::string_tools::parse_hexstr_to_binbuff(
+                    out_data_hex, out_data_blob))
+            return false;
+
+        std::stringstream iss;
+        iss << out_data_blob;
+        boost::archive::portable_binary_iarchive archive(iss);
+        archive >> outputs_data_map_str;
+
+        for (auto const& kv: outputs_data_map_str)
+        {
+            auto const& absolute_offsets = kv.first;
+
+            for (string const& s: kv.second)
+            {
+                cryptonote::output_data_t out_data;
+
+                if (!hex_to_pod(s, out_data))
+                {
+                    cerr << "hex_to_pod faild in output_data_from_hex\n";
+                    return false;
+                }
+
+                //cout << "\n absolute_offsets (last value is amount): ";
+                //for (auto& v: absolute_offsets)
+                //    cout << v << ", ";
+                //cout << '\n';
+
+                outputs_data_map[absolute_offsets].push_back(out_data);
+            }
+        }
+    }
+    catch (...)
+    {
+        cerr << "deserialization faild in output_data_from_hex\n";
+        return false;
+    }
+
+    return true;
+}
+
+
+bool
+populate_known_outputs_from_csv(
+        string const& csv_file,
+        std::unordered_map<public_key, uint64_t>& known_outputs,
+        bool skip_first_line)
+{
+
+    std::ifstream input(csv_file);
+
+    if (!input.is_open())
+    {
+        cerr << "Cant open: " << csv_file << '\n';
+        return false;
+    }
+
+    string line;
+
+    while(getline(input, line))
+    {
+       if (skip_first_line)
+       {
+           skip_first_line = false;
+           continue;
+       }
+       vector<string> vec;
+
+       boost::algorithm::split(vec, line, boost::is_any_of(","));
+
+       uint64_t amount;
+       string  out_public_key;
+
+       try
+       {
+          amount  = boost::lexical_cast<uint64_t>(vec.at(7));
+          out_public_key = vec.at(8);
+       }
+       catch (std::exception const& e)
+       {
+           cerr << e.what() << endl;
+           return false;
+       }
+
+       public_key out_pk;
+
+       if (!hex_to_pod(out_public_key, out_pk))
+       {
+           cerr << "hex_to_pod failed in output_data_from_hex\n";
+           return false;
+       }
+
+       auto it = known_outputs.find(out_pk);
+
+       if (it != known_outputs.end())
+       {
+           cerr << "csv has duplicate out_public_key\n";
+           return false;
+       }
+
+       known_outputs.insert({out_pk, amount});
+    }
+
+    return true;
+
+}
+
 
 
 }

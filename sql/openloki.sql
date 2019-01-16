@@ -20,8 +20,11 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `openloki`
+-- Database: `lokilocker`
 --
+
+CREATE DATABASE IF NOT EXISTS `lokilocker` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `lokilocker`;
 
 -- --------------------------------------------------------
 
@@ -32,7 +35,7 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `Accounts`;
 CREATE TABLE IF NOT EXISTS `Accounts` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `address` varchar(95) NOT NULL,
+  `address` varchar(97) NOT NULL,
   `viewkey_hash` char(64) NOT NULL,
   `scanned_block_height` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `scanned_block_timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',

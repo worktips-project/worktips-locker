@@ -60,6 +60,7 @@
                         <option value="3">High (if you are in hurry and if there is some backlog of txs)</option>
                         <option value="4">Paranoid (absolute priority, but the most expensive obviously)</option>
                     </select>
+                    -->
                     <input class="w-button send-btn" id="form-submit" type="submit" value="Send Payment"
                            data-wait="Please wait..." ng-disabled="submitting">
                 </form>
@@ -92,6 +93,7 @@
                     <div class="move-text-div">
                         <div class="middle-text receive">{{sent_tx.tx_id}}</div>
                     </div>
+                    <!--
                     <label class="send-label" >Transaction Private Key</label>
                     <div class="move-text-div">
                         <div class="middle-text receive">{{sent_tx.tx_prvkey}}</div>
@@ -100,6 +102,7 @@
                     <div class="move-text-div">
                         <a class="login-link" href="{{ sent_tx.explorerLink }} " target="_blank">{{ sent_tx.explorerLink }}</a>
                     </div>
+                    -->
                     <input class="w-button send-btn" type="submit" value="Send Another Payment" data-wait="Please wait...">
                 </form>
             </div>

@@ -122,6 +122,7 @@ RPCCalls::commit_tx(
     if (!connect_to_monero_deamon())
     {
         cerr << "get_current_height: not connected to deamon" << endl;
+        error_msg = "Failed to connect to daemon";
         return false;
     }
 
