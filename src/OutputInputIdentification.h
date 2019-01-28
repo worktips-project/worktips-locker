@@ -56,6 +56,7 @@ public:
     struct output_info
     {
         public_key pub_key;
+        public_key tx_pub_key;
         uint64_t   amount;
         uint64_t   idx_in_tx;
         string     rtc_outpk;
@@ -95,8 +96,9 @@ public:
 
     // public transaction key is combined with our viewkey
     // to create, so called, derived key.
-    std::vector<key_derivation> derivations;
 
+    // stores key derivation and associated tx pub key
+    std::vector<std::pair<key_derivation, public_key> > derivations; 
 
     vector<output_info> identified_outputs;
     vector<input_info>  identified_inputs;
@@ -150,7 +152,7 @@ public:
     get_tx_prefix_hash_str();
 
     virtual string const&
-    get_tx_pub_key_str();
+    get_tx_pub_key_str(size_t index = 0);
 
     virtual uint64_t
     get_mixin_no();

@@ -38,7 +38,7 @@ OutputInputIdentification::OutputInputIdentification(
     for (const auto& tx_pub_key : tx_pub_keys)
     {
         derivations.resize(derivations.size() + 1);
-        if (!generate_key_derivation(tx_pub_key, *viewkey, derivations.back()))
+        if (!generate_key_derivation(tx_pub_key, *viewkey, derivations.back().first))
         {
             OMERROR << "Cant get derived key for: "  << "\n"
                  << "pub_tx_key: " << pod_to_hex(tx_pub_key) << " and "
@@ -47,6 +47,7 @@ OutputInputIdentification::OutputInputIdentification(
             throw OutputInputIdentificationException(
                         "Cant get derived key for a tx");
         }
+        derivations.back().second = tx_pub_key;
     }
 }
 
@@ -85,15 +86,15 @@ OutputInputIdentification::identify_outputs()
         for (const auto& derivation : derivations)
         {
             matched_index++;
-            public_key generated_tx_pubkey;
+            public_key derived_output_pubkey;
 
-            derive_public_key(derivation,
+            derive_public_key(derivation.first,
                     output_idx_in_tx,
                     address_info->address.m_spend_public_key,
-                    generated_tx_pubkey);
+                    derived_output_pubkey);
 
             // check if generated public key matches the current output's key
-            if (txout_k.key != generated_tx_pubkey) continue;
+            if (txout_k.key != derived_output_pubkey) continue;
 
             matched_pub_key_index = matched_index - 1;
 
@@ -132,18 +133,12 @@ OutputInputIdentification::identify_outputs()
                 rct::key mask =  tx->rct_signatures
                     .ecdhInfo[output_idx_in_tx].mask;
 
-                // could keep track of which key goes with which output, but
-                // this should be fine
-                for (const auto& tx_pub_key : tx_pub_keys)
-                {
-                    r = decode_ringct(tx->rct_signatures,
-                            tx_pub_key,
-                            *viewkey,
-                            output_idx_in_tx,
-                            mask,
-                            rct_amount_val);
-                    if (r) break;
-                }
+                r = decode_ringct(tx->rct_signatures,
+                        derivation.second,
+                        *viewkey,
+                        output_idx_in_tx,
+                        mask,
+                        rct_amount_val);
 
                 if (!r)
                 {
@@ -160,7 +155,7 @@ OutputInputIdentification::identify_outputs()
 
             identified_outputs.emplace_back(
                         output_info{
-                                txout_k.key, amount, output_idx_in_tx,
+                                txout_k.key, derivation.second, amount, output_idx_in_tx,
                                 rtc_outpk, rtc_mask, rtc_amount
                         });
 
@@ -277,19 +272,12 @@ OutputInputIdentification::get_tx_prefix_hash_str()
     return tx_prefix_hash_str;
 }
 
+// this function should no longer be required, but is kept to give the db
+// one of the tx pub keys to associate with the transaction
 string const&
-OutputInputIdentification::get_tx_pub_key_str()
+OutputInputIdentification::get_tx_pub_key_str(size_t index)
 {
-    if (matched_pub_key_index != -1)
-        tx_pub_key_str = pod_to_hex(tx_pub_keys[matched_pub_key_index]);
-    else if (tx_pub_key_str.empty())
-    {
-        if (tx_pub_keys.size() >= 2) // xmr two-pub-key case, keeping for posterity
-            tx_pub_key_str = pod_to_hex(tx_pub_keys[1]);
-        else if (tx_pub_keys.size() != 0)
-            tx_pub_key_str = pod_to_hex(tx_pub_keys[0]);
-    }
-
+    tx_pub_key_str = pod_to_hex(identified_outputs[index].tx_pub_key);
     return tx_pub_key_str;
 }
 

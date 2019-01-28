@@ -255,8 +255,12 @@ TxSearch::operator()()
                                                   .get_tx_hash_str();
                     tx_data.prefix_hash      = oi_identification
                                                   .get_tx_prefix_hash_str();
+
+                    // this will be associated with the outputs from now on, not the tx,
+                    // but for convenience of transition to that, this remains.
                     tx_data.tx_pub_key       = oi_identification
                                                  .get_tx_pub_key_str();
+
                     tx_data.account_id       = acc->id.data;
                     tx_data.blockchain_tx_id = blockchain_tx_id;
                     tx_data.total_received   = oi_identification.total_received;
@@ -310,8 +314,7 @@ TxSearch::operator()()
                         out_data.account_id   = acc->id.data;
                         out_data.tx_id        = tx_mysql_id;
                         out_data.out_pub_key  = pod_to_hex(out_info.pub_key);
-                        out_data.tx_pub_key   = oi_identification
-                                .get_tx_pub_key_str();
+                        out_data.tx_pub_key   = pod_to_hex(out_info.tx_pub_key);
                         out_data.amount       = out_info.amount;
                         out_data.out_index    = out_info.idx_in_tx;
                         out_data.rct_outpk    = out_info.rtc_outpk;
