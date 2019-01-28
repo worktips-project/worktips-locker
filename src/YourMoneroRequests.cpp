@@ -245,8 +245,42 @@ YourMoneroRequests::get_address_txs(
         {
             json j_txs = json::array();
 
+            /* For per-output unlocks:
+             * This code makes the (somewhat naive) assumption that there will be
+             * at most one locked and one unlocked received output per transaction,
+             * if there are both.  If this needs to be changed in the future,
+             * change unlock_time_for_locked below into a vector and make a new
+             * "j_tx" for each unlock time.  Modify the other code accordingly.
+             */
             for (XmrTransaction const& tx: txs)
             {
+                vector<XmrOutput> tx_outs;
+
+                // this shouldn't ever be false or we wouldn't be looking at this tx,
+                // but sanity checks are cheap
+                if (!xmr_accounts->select_for_tx(tx.id.data, tx_outs))
+                {
+                    continue;
+                }
+
+                bool some_locked = false, some_unlocked = false;
+                uint64_t locked_amount = 0, unlocked_amount = 0, unlock_time_for_locked = 0;
+
+                for (XmrOutput const& tx_out : tx_outs)
+                {
+                    if (current_bc_status->is_tx_unlocked(tx_out.unlock_time, tx.height))
+                    {
+                        some_unlocked = true;
+                        unlocked_amount += tx_out.amount;
+                    }
+                    else
+                    {
+                        some_locked = true;
+                        locked_amount += tx_out.amount;
+                        unlock_time_for_locked = tx_out.unlock_time;
+                    }
+                }
+
                 json j_tx {
                         {"id"             , tx.blockchain_tx_id},
                         {"coinbase"       , bool {tx.coinbase}},
@@ -255,7 +289,7 @@ YourMoneroRequests::get_address_txs(
                         {"height"         , tx.height},
                         {"mixin"          , tx.mixin},
                         {"payment_id"     , tx.payment_id},
-                        {"unlock_time"    , tx.unlock_time},                  
+                        {"unlock_time"    , tx.unlock_time},
                         {"total_sent"     , 0}, // to be field when checking for spent_outputs below
                         {"total_received" , std::to_string(tx.total_received)},
                         {"timestamp"      , static_cast<uint64_t>(tx.timestamp)*1000},
@@ -296,9 +330,28 @@ YourMoneroRequests::get_address_txs(
 
                 total_received += tx.total_received;
 
-                if (bool {tx.spendable})
+                total_received_unlocked += unlocked_amount;
+
+                if (some_locked && some_unlocked)
                 {
-                    total_received_unlocked += tx.total_received;
+                    j_tx["total_received"] = unlocked_amount;
+
+                    json j_tx2 {
+                        {"id"             , tx.blockchain_tx_id},
+                            {"coinbase"       , bool {tx.coinbase}},
+                            {"tx_pub_key"     , tx.tx_pub_key},
+                            {"hash"           , tx.hash},
+                            {"height"         , tx.height},
+                            {"mixin"          , tx.mixin},
+                            {"payment_id"     , tx.payment_id},
+                            {"unlock_time"    , unlock_time_for_locked},
+                            {"total_sent"     , 0}, // to be field when checking for spent_outputs below
+                            {"total_received" , std::to_string(locked_amount)},
+                            {"timestamp"      , static_cast<uint64_t>(tx.timestamp)*1000},
+                            {"mempool"        , false} // tx in database are never from mempool
+                    };
+
+                    j_txs.push_back(j_tx2);
                 }
 
                 j_txs.push_back(j_tx);
@@ -648,16 +701,6 @@ YourMoneroRequests::get_unspent_outs(
 
             for (XmrTransaction& tx: txs)
             {
-                // we skip over locked outputs
-                // as they cant be spent anyway.
-                // thus no reason to return them to the frontend
-                // for constructing a tx.
-
-                if (!current_bc_status->is_tx_unlocked(
-                            tx.unlock_time, tx.height))
-                {
-                    continue;
-                }
 
 //                if (!bool {tx.coinbase})
 //                {
@@ -670,6 +713,15 @@ YourMoneroRequests::get_unspent_outs(
                 {
                     for (XmrOutput &out: outs)
                     {
+                        // we skip over locked outputs
+                        // as they cant be spent anyway.
+                        // thus no reason to return them to the frontend
+                        // for constructing a tx.
+                        if (!current_bc_status->is_tx_unlocked(out.unlock_time, tx.height))
+                        {
+                            continue;
+                        }
+
                         // skip outputs considered as dust
                         if (out.amount < dust_threshold)
                         {

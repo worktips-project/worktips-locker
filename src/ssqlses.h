@@ -169,7 +169,7 @@ struct XmrTransaction : public Transactions, Table
 
 };
 
-sql_create_13(Outputs, 1, 13,
+sql_create_14(Outputs, 1, 14,
               sql_bigint_unsigned_null, id,               // this is null so that we can set it to mysqlpp:null when inserting rows
               sql_bigint_unsigned, account_id,            // this way auto_increment of the id will take place and we can
               sql_bigint_unsigned, tx_id,                 // use vector of outputs to write at once to mysql
@@ -182,7 +182,8 @@ sql_create_13(Outputs, 1, 13,
               sql_bigint_unsigned, global_index,
               sql_bigint_unsigned, out_index,
               sql_bigint_unsigned, mixin,
-              sql_timestamp      , timestamp);
+              sql_timestamp      , timestamp,
+              sql_bigint_unsigned, unlock_time);
 
 struct XmrOutput : public Outputs, Table
 {
@@ -208,12 +209,12 @@ struct XmrOutput : public Outputs, Table
                                      `tx_pub_key`,
                                      `rct_outpk`, `rct_mask`, `rct_amount`,
                                      `amount`, `global_index`,
-                                     `out_index`, `mixin`, `timestamp`)
+                                     `out_index`, `mixin`, `timestamp`, `unlock_time`)
                             VALUES (%0q, %1q, %2q,
                                     %3q,
                                     %4q, %5q, %6q,
                                     %7q, %8q,
-                                    %9q, %10q, %11q);
+                                    %9q, %10q, %11q, %12q);
     )";
 
 

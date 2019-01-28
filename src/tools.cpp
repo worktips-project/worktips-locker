@@ -561,11 +561,19 @@ get_ouputs(const transaction& tx)
 
 vector<outputs_tuple> get_outputs_tuple(const transaction& tx)
 {
-   vector<outputs_tuple> outputs;
+    vector<outputs_tuple> outputs;
 
     for (uint64_t n = 0; n < tx.vout.size(); ++n)
     {
-        outputs.push_back(make_tuple(tx.vout[n].target, tx.vout[n].amount, n));
+        // (Loki) per-output unlock time
+        if (tx.version > 2)
+        {
+            outputs.push_back(make_tuple(tx.vout[n].target, tx.vout[n].amount, n, tx.output_unlock_times[n]));
+        }
+        else
+        {
+            outputs.push_back(make_tuple(tx.vout[n].target, tx.vout[n].amount, n, tx.unlock_time));
+        }
     }
 
     return outputs;

@@ -63,7 +63,7 @@ OutputInputIdentification::get_mixin_no()
 void
 OutputInputIdentification::identify_outputs()
 {
-    //          <public_key  , amount  , out idx>
+    //          <public_key  , amount  , out idx, unlock time>
     std::vector<outputs_tuple> outputs = get_outputs_tuple(*tx);
 
     for (auto& out: outputs)
@@ -77,6 +77,7 @@ OutputInputIdentification::identify_outputs()
             = boost::get<cryptonote::txout_to_key>(std::get<0>(out));
         uint64_t amount             = std::get<1>(out);
         uint64_t output_idx_in_tx   = std::get<2>(out);
+        uint64_t unlock_time        = std::get<3>(out);
 
         // get the tx output public key
         // that normally would be generated for us,
@@ -156,7 +157,7 @@ OutputInputIdentification::identify_outputs()
             identified_outputs.emplace_back(
                         output_info{
                                 txout_k.key, derivation.second, amount, output_idx_in_tx,
-                                rtc_outpk, rtc_mask, rtc_amount
+                                rtc_outpk, rtc_mask, rtc_amount, unlock_time
                         });
 
         }

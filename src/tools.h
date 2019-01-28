@@ -147,7 +147,8 @@ get_mixin_no_in_txs(const vector<transaction>& txs);
 vector<pair<txout_to_key, uint64_t>>
 get_ouputs(const transaction& tx);
 
-typedef tuple<txout_target_v, uint64_t, uint64_t> outputs_tuple;
+//          <public_key  , amount  , out idx, unlock time>
+typedef tuple<txout_target_v, uint64_t, uint64_t, uint64_t> outputs_tuple;
 vector<outputs_tuple> get_outputs_tuple(const transaction& tx);
 
 vector<txin_to_key>

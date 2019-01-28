@@ -324,6 +324,7 @@ TxSearch::operator()()
                                 .at(out_data.out_index);
                         out_data.mixin        = tx_data.mixin;
                         out_data.timestamp    = tx_data.timestamp;
+                        out_data.unlock_time  = out_info.unlock_time;
 
                         outputs_found.push_back(std::move(out_data));
 

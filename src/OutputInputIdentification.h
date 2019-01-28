@@ -62,6 +62,7 @@ public:
         string     rtc_outpk;
         string     rtc_mask;
         string     rtc_amount;
+        uint64_t   unlock_time;
     };
 
     // define a structure to keep information about found
