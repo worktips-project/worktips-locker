@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS `Outputs` (
   `out_index` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   `mixin` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `unlock_time` bigint(20) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `out_pub_key` (`out_pub_key`),
   KEY `tx_id` (`tx_id`),
