@@ -762,7 +762,7 @@ YourMoneroRequests::get_unspent_outs(
                                 {"tx_id"           , out.tx_id},
                                 {"tx_hash"         , tx.hash},
                                 {"tx_prefix_hash"  , tx.prefix_hash},
-                                {"tx_pub_key"      , tx.tx_pub_key},
+                                {"tx_pub_key"      , out.tx_pub_key},
                                 {"timestamp"       , static_cast<uint64_t>(
                                             out.timestamp*1e3)},
                                 {"height"          , tx.height},
