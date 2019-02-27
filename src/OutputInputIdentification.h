@@ -153,7 +153,7 @@ public:
     get_tx_prefix_hash_str();
 
     virtual string const&
-    get_tx_pub_key_str(size_t index = 0);
+    get_tx_pub_key_str();
 
     virtual uint64_t
     get_mixin_no();
