@@ -21,6 +21,7 @@ OutputInputIdentification::OutputInputIdentification(
     address_info = _a;
     viewkey = _v;
     tx = _tx;
+    tx_pub_key_str = "";
 
     tx_pub_keys  = xmreg::get_tx_pub_keys_from_received_outs(*tx);
 
@@ -276,9 +277,19 @@ OutputInputIdentification::get_tx_prefix_hash_str()
 // this function should no longer be required, but is kept to give the db
 // one of the tx pub keys to associate with the transaction
 string const&
-OutputInputIdentification::get_tx_pub_key_str(size_t index)
+OutputInputIdentification::get_tx_pub_key_str()
 {
-    tx_pub_key_str = pod_to_hex(identified_outputs[index].tx_pub_key);
+    if (tx_pub_key_str == "")
+    {
+        if (tx_pub_keys.size() > 0)
+        {
+            tx_pub_key_str = pod_to_hex(tx_pub_keys[0]);
+        }
+        else
+        {
+            tx_pub_key_str = "0000000000000000000000000000000000000000000000000000000000000000";
+        }
+    }
     return tx_pub_key_str;
 }
 

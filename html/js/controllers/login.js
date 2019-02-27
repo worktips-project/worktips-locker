@@ -39,14 +39,6 @@ thinwalletCtrls.controller("LoginCtrl", function($scope, $location, AccountServi
 
     $scope.mnemonic_language = 'english';
 
-    if (config.nettype == 1) {
-        // just some dummy account, as not to fill login form every time.
-        $scope.mnemonic = "agenda shrugged liquid extra mundane phone nomad oust duckling sifting pledge loyal royal urban skater bawled gusts bounced boil violin mumble gags axle sapling shrugged";
-    } else if (config.nettype == 2) {
-        // just some dummy account, as not to fill login form every time.
-        $scope.mnemonic = "gels lair teeming cease nanny utility inexact leisure civilian emerge zippers skew gasp enjoy fugitive nanny candy nuance muppet scrub uneven yard ulcers unquoted yard";
-    }
-
     var decode_seed = function(mnemonic, language)
     {
         var seed;

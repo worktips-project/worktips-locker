@@ -44,7 +44,7 @@ thinwalletCtrls.controller('GenerateWalletCtrl', function ($scope, $location, Ac
     });
     $scope.generateNewSeed = function () {
         //$scope.seed = cnUtil.rand_16();
-        $scope.seed = cnUtil.rand_32();
+        $scope.seed = cnUtil.random_scalar();
     };
     $scope.login = function (seed, mnemonic, mnemonic_confirmation) {
         $scope.error = '';
