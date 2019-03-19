@@ -48,6 +48,9 @@ RandomOutputs::get_output_pub_key(
     if (res.outs.empty())
         return false;
 
+    if (!res.outs[0].unlocked)
+        return false;
+
     out_pk = res.outs[0].key;
 
     return true;
@@ -104,7 +107,7 @@ RandomOutputs::find_random_outputs()
         // use it as a failself, as we don't want infinit loop here
         size_t trial_i {0};
 
-        while (seen_indices.size() < outs_count)
+        while (outs_info.outs.size() < outs_count)
         {
             if (trial_i++ > max_no_of_trials)
             {
@@ -116,8 +119,8 @@ RandomOutputs::find_random_outputs()
             uint64_t random_global_amount_idx
                     = get_random_output_index(num_outs);
 
-            if (seen_indices.count(random_global_amount_idx) > 0)
-                continue;
+            while (seen_indices.count(random_global_amount_idx) > 0)
+                random_global_amount_idx = get_random_output_index(num_outs);
 
             seen_indices.emplace(random_global_amount_idx);
 
@@ -127,14 +130,13 @@ RandomOutputs::find_random_outputs()
                                     random_global_amount_idx,
                                     found_output_public_key))
             {
-                OMERROR << "Cant find outputs public key for amount "
-                        << amount << " and global_index of "
-                        << random_global_amount_idx;
+                continue;
             }
 
             outs_info.outs.push_back({random_global_amount_idx,
                                       found_output_public_key});
         }
+        std::cout << "mixing outs found, count: " << outs_info.outs.size() << std::endl;
 
         found_outputs.push_back(outs_info);
     }
