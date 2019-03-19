@@ -32,7 +32,7 @@ class MicroCore {
     tx_memory_pool m_mempool;
     Blockchain core_storage;
     service_nodes::service_node_list m_service_node_list;
-    loki::deregister_vote_pool m_deregister_vote_pool;
+    service_nodes::deregister_vote_pool m_deregister_vote_pool;
 
     hw::device* m_device;
 
@@ -74,7 +74,7 @@ public:
                    vector<cryptonote::output_data_t>& outputs)
     {
         core_storage.get_db()
-                .get_output_key(amount, absolute_offsets, outputs);
+                .get_output_key(epee::span<const uint64_t>(&amount, 1), absolute_offsets, outputs);
     }
 
     virtual output_data_t
@@ -133,7 +133,12 @@ public:
     virtual std::vector<uint64_t>
     get_tx_amount_output_indices(uint64_t const& tx_id) const
     {
-        return core_storage.get_db().get_tx_amount_output_indices(tx_id);
+        std::vector<std::vector<uint64_t> > result = core_storage.get_db().get_tx_amount_output_indices(tx_id);
+        if (result.size() == 0)
+        {
+            return std::vector<uint64_t>();
+        }
+        return std::move(result[0]);
     }
 
     virtual bool
