@@ -101,10 +101,7 @@ MicroCore::get_block_from_height(uint64_t height, block& blk) const
 
     try
     {
-        {
-            block b;
-        }
-        core_storage.get_db().get_block_from_height(height);
+        blk = core_storage.get_db().get_block_from_height(height);
     }
     catch (const exception& e)
     {
