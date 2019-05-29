@@ -737,20 +737,17 @@ YourMoneroRequests::get_unspent_outs(
 
                         string rct = out.get_rct();
 
-                        // coinbase rct txs require speciall treatment
-                        if (tx.coinbase && tx.is_rct)
+                        if (tx.rct_type == 0) // coinbase
                         {
-                            uint64_t amount  = (tx.is_rct ? 0 : out.amount);
-
-                            output_data_t od =
-                                    current_bc_status->get_output_key(
-                                            amount, global_amount_index);
-
-                            string rtc_outpk  = pod_to_hex(od.commitment);
-                            string rtc_mask   = pod_to_hex(rct::identity());
-                            string rtc_amount(64, '0');
-
-                            rct = rtc_outpk + rtc_mask + rtc_amount;
+                            rct = "coinbase";
+                        }
+                        else if (tx.rct_type == 3) // Bulletproof
+                        {
+                            rct = out.rct_outpk + out.rct_mask + out.rct_amount;
+                        }
+                        else if (tx.rct_type == 4) // Bulletproof v2
+                        {
+                            rct = out.rct_outpk + out.rct_amount.substr(0,16);
                         }
 
                         json j_out{
