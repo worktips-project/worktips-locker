@@ -428,7 +428,7 @@ YourMoneroRequests::get_address_txs(
                     = std::to_string(
                         boost::lexical_cast<uint64_t>(
                             j_response["total_received_unlocked"].get<string>())
-                                          + total_received_mempool - total_sent_mempool);
+                                          - total_sent_mempool);
         }
 
     }
@@ -499,6 +499,7 @@ YourMoneroRequests::get_address_info(
     if (login_and_start_search_thread(xmr_address, view_key, acc, j_response))
     {
         uint64_t total_received {0};
+        uint64_t locked_funds {0};
 
         // ping the search thread that we still need it.
         // otherwise it will finish after some time.
@@ -571,7 +572,14 @@ YourMoneroRequests::get_address_info(
                             }
                         }
 
-                        total_received += out.amount;
+                        if (current_bc_status->is_tx_unlocked(out.unlock_time, tx.height))
+                        {
+                            total_received += out.amount;
+                        }
+                        else
+                        {
+                            locked_funds += out.amount;
+                        }
 
                     } //  for (XmrOutput &out: outs)
 
@@ -581,6 +589,7 @@ YourMoneroRequests::get_address_info(
 
 
             j_response["total_received"] = std::to_string(total_received);
+            j_response["locked_funds"] = std::to_string(locked_funds);
             j_response["total_sent"]     = std::to_string(total_sent);
 
             j_response["spent_outputs"]  = j_spent_outputs;
