@@ -428,7 +428,7 @@ YourMoneroRequests::get_address_txs(
                     = std::to_string(
                         boost::lexical_cast<uint64_t>(
                             j_response["total_received_unlocked"].get<string>())
-                                          + total_received_mempool - total_sent_mempool);
+                                          - total_sent_mempool);
         }
 
     }
@@ -499,6 +499,7 @@ YourMoneroRequests::get_address_info(
     if (login_and_start_search_thread(xmr_address, view_key, acc, j_response))
     {
         uint64_t total_received {0};
+        uint64_t locked_funds {0};
 
         // ping the search thread that we still need it.
         // otherwise it will finish after some time.
@@ -571,7 +572,14 @@ YourMoneroRequests::get_address_info(
                             }
                         }
 
-                        total_received += out.amount;
+                        if (current_bc_status->is_tx_unlocked(out.unlock_time, tx.height))
+                        {
+                            total_received += out.amount;
+                        }
+                        else
+                        {
+                            locked_funds += out.amount;
+                        }
 
                     } //  for (XmrOutput &out: outs)
 
@@ -581,6 +589,7 @@ YourMoneroRequests::get_address_info(
 
 
             j_response["total_received"] = std::to_string(total_received);
+            j_response["locked_funds"] = std::to_string(locked_funds);
             j_response["total_sent"]     = std::to_string(total_sent);
 
             j_response["spent_outputs"]  = j_spent_outputs;
@@ -737,20 +746,17 @@ YourMoneroRequests::get_unspent_outs(
 
                         string rct = out.get_rct();
 
-                        // coinbase rct txs require speciall treatment
-                        if (tx.coinbase && tx.is_rct)
+                        if (tx.rct_type == 0) // coinbase
                         {
-                            uint64_t amount  = (tx.is_rct ? 0 : out.amount);
-
-                            output_data_t od =
-                                    current_bc_status->get_output_key(
-                                            amount, global_amount_index);
-
-                            string rtc_outpk  = pod_to_hex(od.commitment);
-                            string rtc_mask   = pod_to_hex(rct::identity());
-                            string rtc_amount(64, '0');
-
-                            rct = rtc_outpk + rtc_mask + rtc_amount;
+                            rct = "coinbase";
+                        }
+                        else if (tx.rct_type == 3) // Bulletproof
+                        {
+                            rct = out.rct_outpk + out.rct_mask + out.rct_amount;
+                        }
+                        else if (tx.rct_type == 4) // Bulletproof v2
+                        {
+                            rct = out.rct_outpk + out.rct_amount.substr(0,16);
                         }
 
                         json j_out{
@@ -1531,6 +1537,8 @@ YourMoneroRequests::get_tx(
         j_response["mixin_no"]       = mixin_no;
         j_response["num_of_outputs"] = output_pub_keys.size();
         j_response["num_of_inputs"]  = input_key_imgs.size();
+        j_response["tx_version"]     = tx.version;
+        j_response["rct_type"]       = tx.rct_signatures.type;
 
         if (!coinbase &&  tx.vin.size() > 0)
         {

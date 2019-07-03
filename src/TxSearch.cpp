@@ -552,9 +552,9 @@ TxSearch::operator()()
             XmrAccount updated_acc = *acc;
 
             updated_acc.scanned_block_height    = h2;
-            updated_acc.scanned_block_timestamp
-                    = DateTime(static_cast<time_t>(
-                                   blocks.back().timestamp));
+            time_t tmp_timestamp = static_cast<time_t>(blocks.back().timestamp);
+            if (tmp_timestamp < 24 * 60 * 60) tmp_timestamp = 24 * 60 * 60;
+            updated_acc.scanned_block_timestamp = DateTime(tmp_timestamp);
 
             if (xmr_accounts->update(*acc, updated_acc))
             {

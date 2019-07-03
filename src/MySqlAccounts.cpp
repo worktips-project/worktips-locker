@@ -218,7 +218,8 @@ MySqlAccounts::MySqlAccounts(shared_ptr<CurrentBlockchainStatus> _current_bc_sta
     : current_bc_status {_current_bc_status}
 {
     // create connection to the mysql
-    conn = make_shared<MySqlConnector>();
+    conn = make_shared<MySqlConnector>(
+            new mysqlpp::ReconnectOption(true));
 
     _init();
 }

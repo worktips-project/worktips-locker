@@ -56,6 +56,14 @@ XmrTransaction::to_json() const
 DateTime
 XmrTransaction::timestamp_to_DateTime(time_t timestamp)
 {
+
+    // to avoid potentially inserting a time before 1970-01-01 -- 00:00
+    // (DateTime constructor uses localtime and so if the time passed
+    // is 0 and the time zone is west of UTC then it errors)
+    if (timestamp < 24 * 60 * 60)
+    {
+        timestamp = 24 * 60 * 60;
+    }
     return DateTime(timestamp);
 }
 

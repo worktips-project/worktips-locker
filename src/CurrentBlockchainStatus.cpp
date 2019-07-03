@@ -106,7 +106,7 @@ CurrentBlockchainStatus::get_blocks_range(
     {
         return mcore->get_blocks_range(h1, h2);
     }
-    catch (BLOCK_DNE& e)
+    catch (std::exception& e)
     {
         cerr << e.what() << endl;
     }
@@ -196,7 +196,7 @@ CurrentBlockchainStatus::get_tx_with_output(
         // and second is local index of the output i in that tx
         tx_out_idx = mcore->get_output_tx_and_index(amount, output_idx);
     }
-    catch (const OUTPUT_DNE& e)
+    catch (const std::exception& e)
     {
 
         string out_msg = fmt::format(
@@ -232,7 +232,7 @@ CurrentBlockchainStatus::get_output_keys(
         mcore->get_output_key(amount, absolute_offsets, outputs);
         return true;
     }
-    catch (const OUTPUT_DNE& e)
+    catch (const std::exception& e)
     {
         OMERROR << "get_output_keys: " << e.what();
     }
