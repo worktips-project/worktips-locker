@@ -18,7 +18,8 @@ RPCCalls::RPCCalls(string _deamon_url, uint64_t _timeout)
 
     m_http_client.set_server(
             deamon_url,
-            boost::optional<epee::net_utils::http::login>{});
+            boost::optional<epee::net_utils::http::login>{},
+            epee::net_utils::ssl_support_t::e_ssl_support_disabled);
 }
 
 RPCCalls::RPCCalls(RPCCalls&& a)
@@ -36,7 +37,8 @@ RPCCalls::RPCCalls(RPCCalls&& a)
     // so we just initialize it from zero
     m_http_client.set_server(
             deamon_url,
-            boost::optional<epee::net_utils::http::login>{});
+            boost::optional<epee::net_utils::http::login>{},
+            epee::net_utils::ssl_support_t::e_ssl_support_disabled);
 
     // after the move, disconned the a object
     a.m_http_client.disconnect();
@@ -66,7 +68,8 @@ RPCCalls::operator=(RPCCalls&& a)
     // so we just initialize it from zero
     m_http_client.set_server(
             deamon_url,
-            boost::optional<epee::net_utils::http::login>{});
+            boost::optional<epee::net_utils::http::login>{},
+            epee::net_utils::ssl_support_t::e_ssl_support_disabled);
 
     // after the move, disconned the a object
     a.m_http_client.disconnect();
