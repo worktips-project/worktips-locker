@@ -131,7 +131,6 @@ set(LIBRARIES
         mysqlpp
         mysqlclient
         device
-        randomx
         epee
         checkpoints
         version       

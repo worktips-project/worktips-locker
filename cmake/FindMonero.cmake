@@ -29,7 +29,7 @@
 #------------------------------------------------------------------------------
 
 set(LIBS common;blocks;cryptonote_basic;cryptonote_core;
-		cryptonote_protocol;daemonizer;mnemonics;epee;lmdb;device;randomx;
+		cryptonote_protocol;daemonizer;mnemonics;epee;lmdb;device;
 		blockchain_db;ringct;wallet;cncrypto;easylogging;version;checkpoints;
 		ringct_basic)
 
@@ -51,8 +51,7 @@ foreach (l ${LIBS})
 										"/lib"
 										"/src/crypto"
 										"/contrib/epee/src"
-                                        "/external/easylogging++/"
-                                        "/external/randomx/"
+										"/external/easylogging++/"
 										"/src/ringct/"
 			NO_DEFAULT_PATH
 			)

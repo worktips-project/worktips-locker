@@ -28,7 +28,7 @@ OutputInputIdentification::OutputInputIdentification(
     tx_is_coinbase = is_coinbase;
     tx_hash = _tx_hash;
 
-    is_rct = (tx->version >= cryptonote::txversion::v2_ringct);
+    is_rct = (tx->version >= 2);
 
     if (is_rct)
     {

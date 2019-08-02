@@ -566,7 +566,7 @@ vector<outputs_tuple> get_outputs_tuple(const transaction& tx)
     for (uint64_t n = 0; n < tx.vout.size(); ++n)
     {
         // (Loki) per-output unlock time
-        if (tx.version > cryptonote::txversion::v2_ringct)
+        if (tx.version > 2)
         {
             outputs.push_back(make_tuple(tx.vout[n].target, tx.vout[n].amount, n, tx.output_unlock_times[n]));
         }
@@ -1029,8 +1029,7 @@ make_tx_from_json(const string& json_str, transaction& tx)
     }
 
     // get version and unlock time from json
-    uint16_t version = j["version"].get<uint16_t>();
-    tx.version     = static_cast<cryptonote::txversion>(version);
+    tx.version     = j["version"].get<size_t>();
     tx.unlock_time = j["unlock_time"].get<uint64_t>();
 
     // next get extra data
