@@ -2,9 +2,9 @@
   "daemon-url" :
   {
     "_comment" : "RPC urls to monero deamon",
-    "mainnet"  : "http://127.0.0.1:22023",
-    "testnet"  : "http://127.0.0.1:38157",
-    "stagenet" : "http://127.0.0.1:38154"
+    "mainnet"  : "http://127.0.0.1:31022",
+    "testnet"  : "http://127.0.0.1:33022",
+    "stagenet" : "http://127.0.0.1:32022"
   },
   "blockchain-path" :
   {
@@ -18,7 +18,7 @@
     "_comment" : "how should the backend connect to the mysql database",
     "url"      : "127.0.0.1",
     "port"     : 3306,
-    "dbname"   : "lokilocker",
+    "dbname"   : "worktipslocker",
     "user"     : "root",
     "password" : ""
   },
@@ -27,13 +27,13 @@
     "_comment" : "how should the backend connect to the test mysql database",
     "url"      : "127.0.0.1",
     "port"     : 3306,
-    "dbname"   : "openloki_test",
+    "dbname"   : "openworktips_test",
     "user"     : "root",
     "password" : ""
   },
   "wallet_import" :
   {
-    "_comment": "if fee is 0, then importing is free. fee is in base 1e9, e.g., 0.1 LOKI is 0.1 x 1e9 = 100000000",
+    "_comment": "if fee is 0, then importing is free. fee is in base 1e9, e.g., 0.1 WTIP is 0.1 x 1e8 = 10000000",
     "fee"     : 0,
     "testnet" :
     {
