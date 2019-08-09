@@ -193,7 +193,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q, AccountS
         mymonero_core_js.monero_utils_promise.then(function(coreBridge_instance)
         {
             if (targets.length > 1) {
-                throw "Loki Locker currently only supports one target"
+                throw "Worktips Locker currently only supports one target"
             }
             const target = targets[0]
             if (!target.address && !target.amount) {
@@ -296,7 +296,7 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q, AccountS
                 });
                 return
             }
-            // loki address (incl subaddresses):
+            // worktips address (incl subaddresses):
             try {
                 // verify that the address is valid
                 coreBridge_instance.decode_address(target.address, config.nettype);
@@ -308,8 +308,8 @@ thinwalletCtrls.controller('SendCoinsCtrl', function($scope, $http, $q, AccountS
             //
             function sendTo(target_address, amount, domain/*may be null*/)
             {
-                const mixin = 9; // mandatory fixed mixin for Loki
-                let statusUpdate_messageBase = sweeping ? `Sending wallet balance…` : `Sending ${amount} LOKI…`
+                const mixin = 9; // mandatory fixed mixin for Worktips
+                let statusUpdate_messageBase = sweeping ? `Sending wallet balance…` : `Sending ${amount} WORKTIPS…`
                 function _configureWith_statusUpdate(str, code)
                 {
                     console.log("Step:", str)

@@ -72,12 +72,12 @@ TEST_P(BCSTATUS_TEST, DefaultConstruction)
 
 
 
-TEST_P(BCSTATUS_TEST, InitLokiBlockchain)
+TEST_P(BCSTATUS_TEST, InitWorktipsBlockchain)
 {
     EXPECT_CALL(*mcore_ptr, init(_, _))
             .WillOnce(Return(true));
 
-    EXPECT_TRUE(bcs->init_loki_blockchain());
+    EXPECT_TRUE(bcs->init_worktips_blockchain());
 }
 
 TEST_P(BCSTATUS_TEST, GetBlock)

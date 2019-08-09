@@ -1,6 +1,6 @@
 var config = {
     apiUrl: "http://127.0.0.1:1984/",
-    //apiUrl: "http://loki.evo.codes:1984/",
+    //apiUrl: "http://<SITE>:1984/",
     mainnetExplorerUrl: "https://wtip-explorer.gonspool.com/",
     testnetExplorerUrl: "",
     stagenetExplorerUrl: "",

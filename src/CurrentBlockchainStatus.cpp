@@ -6,7 +6,7 @@
 
 
 #undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "openloki"
+#define MONERO_DEFAULT_LOG_CATEGORY "openworktips"
 
 namespace xmreg
 {
@@ -71,7 +71,7 @@ CurrentBlockchainStatus::update_current_blockchain_height()
 }
 
 bool
-CurrentBlockchainStatus::init_loki_blockchain()
+CurrentBlockchainStatus::init_worktips_blockchain()
 {
     // initialize the core using the blockchain path
     return mcore->init(bc_setup.blockchain_path, bc_setup.net_type);}

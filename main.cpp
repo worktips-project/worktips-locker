@@ -113,8 +113,8 @@ auto current_bc_status
 // since CurrentBlockchainStatus class monitors current status
 // of the blockchain (e.g., current height). This is the only class
 // that has direct access to blockchain and talks (using rpc calls)
-// with the loki daemon.
-if (!current_bc_status->init_loki_blockchain())
+// with the worktips daemon.
+if (!current_bc_status->init_worktips_blockchain())
 {
     OMERROR << "Error accessing blockchain.";
     return EXIT_FAILURE;
@@ -195,7 +195,7 @@ MAKE_RESOURCE(get_version);
 // restbed service
 Service service;
 
-// Publish the Loki Locker API created so that front end can use it
+// Publish the Worktips Locker API created so that front end can use it
 service.publish(login);
 service.publish(get_address_txs);
 service.publish(get_address_info);

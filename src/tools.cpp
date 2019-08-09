@@ -565,7 +565,7 @@ vector<outputs_tuple> get_outputs_tuple(const transaction& tx)
 
     for (uint64_t n = 0; n < tx.vout.size(); ++n)
     {
-        // (Loki) per-output unlock time
+        // (Worktips) per-output unlock time
         if (tx.version > 2)
         {
             outputs.push_back(make_tuple(tx.vout[n].target, tx.vout[n].amount, n, tx.output_unlock_times[n]));
@@ -934,7 +934,7 @@ get_tx_pub_keys_from_received_outs(const transaction &tx)
         // Extra may only be partially parsed, it's OK if tx_extra_fields contains public key
     }
 
-    // NOTE(Loki): Loki miner transactions include two pubkeys, one for the miner and
+    // NOTE(Worktips): Worktips miner transactions include two pubkeys, one for the miner and
     // one for the governance/service node rewards.
     tx_extra_pub_key pub_key_field;
     std::vector<public_key> tx_pub_keys;

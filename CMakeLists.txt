@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 
 set(PROJECT_NAME
-        loki-locker)
+        worktips-locker)
 
 project(${PROJECT_NAME})
 
@@ -11,15 +11,15 @@ if(CMAKE_SIZEOF_VOID_P EQUAL "4")
   add_definitions(-DMDB_VL32)
 endif()
 
-if (NOT LOKI_DIR)
-    set(LOKI_DIR ~/loki)
+if (NOT WORKTIPS_DIR)
+    set(WORKTIPS_DIR ~/worktips)
 endif()
 
 option(BUILD_TEST "Build tests for the project" OFF)
 
-message(STATUS LOKI_DIR ": ${LOKI_DIR}")
+message(STATUS WORKTIPS_DIR ": ${WORKTIPS_DIR}")
 
-set(MONERO_SOURCE_DIR ${LOKI_DIR}
+set(MONERO_SOURCE_DIR ${WORKTIPS_DIR}
         CACHE PATH "Path to the root directory for Monero")
 
 # set location of monero build tree

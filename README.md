@@ -122,7 +122,7 @@ mkdir build && cd build
 
 cmake ..
 
-# altearnatively can use cmake -DLOKI_DIR=/path/to/worktips_folder ..
+# altearnatively can use cmake -DWORKTIPS_DIR=/path/to/worktips_folder ..
 # if Worktips is not in ~/worktips
 
 make

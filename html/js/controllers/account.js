@@ -267,7 +267,7 @@ thinwalletCtrls.controller('AccountCtrl', function($scope, $rootScope, $http, $q
                         }
                         else
                         {
-                            //remove tx if zero loki received. probably spent only tx,
+                            //remove tx if zero worktips received. probably spent only tx,
                             //but we don't have spendkey to verify this.
                             //console.log(new JSBigInt(transactions[i].total_received));
                             //console.log(new JSBigInt(transactions[i].total_received).compare(0));
