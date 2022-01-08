@@ -28,17 +28,6 @@ to MyMonero. They include:
  - free, time based imports of recent transactions added.
 
 
-## Current development version
-
-All current changes, bug fixes and updates are done in the
-[branch](https://github.com/moneroexamples/worktipslocker/tree/devel).
-
-
-## Screenshot
-
-![Worktips Locker](screenshot/screen1.png)
-
-
 ## Host it yourself
 
 The Worktips Locker consists of four components that need to be setup for it to work:
