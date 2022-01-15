@@ -78,7 +78,7 @@ sudo apt install git build-essential cmake libboost-all-dev miniupnpc libunbound
 # go to home folder
 cd ~
 
-git clone --recursive https://github.com/worktips-project/worktips
+git clone --recursive https://github.com/worktips-project/worktips-core
 
 cd worktips/
 
